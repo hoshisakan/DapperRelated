@@ -4,9 +4,7 @@ namespace DataAccess.Repository.IRepository
 {
     public interface ICardRepository : IRepository<Card>
     {
-        int Add(Card card);
-        int Update(Card card);
-        int Delete(Card card);
-        int Delete(int id);
+        void ReadAll(List<Card> cards);
+        void ReadFirst(Card card);
     }
 }

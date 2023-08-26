@@ -27,47 +27,105 @@ try
 
     UnitWork unitWork = new UnitWork(cnn);
 
-    List<Card> cards = unitWork.CardRepository.GetAll();
+    //List<Card> cards = unitWork.CardRepository.GetAll();
 
     //CardRepository cardRepository = new CardRepository(cnn);
 
     //List<Card> cards = cardRepository.GetAll();
 
-    Console.WriteLine($"Number of cards: {cards.Count}");
+    //Console.WriteLine($"Number of cards: {cards.Count}");
 
-    //int cardNumber = 1;
+    int cardNumber = 64;
 
-    //while (cardNumber <= 100)
-    //{
-    //    Card card = new Card()
-    //    {
-    //        Name = $"Card {cardNumber} Update",
-    //        Description = $"Description {cardNumber} Update",
-    //        Attack = cardNumber,
-    //        HealthPoint = cardNumber,
-    //        Defense = cardNumber,
-    //        Cost = cardNumber
-    //    };
-    //    //unitWork.CardRepository.Add(card);
-    //    cards = unitWork.CardRepository.GetAll();
-    //    //cardRepository.AddCard(card);
-    //    //cards = cardRepository.GetAll();
-    //    cardNumber++;
-    //}
-
-    foreach (Card card in cards)
+    Dictionary<string, string> queryMode = new Dictionary<string, string>()
     {
-        Console.WriteLine($"Id: {card.Id},Name: {card.Name},Description: {card.Description} Before Update");
+        {"Add", "Create"},
+        {"Update", "Update"}
+    };
+    string currentMode = "Add";
+    //string currentMode = "Update";
+
+    //int result = unitWork.CardRepository.Delete(99999);
+    //Console.WriteLine($"Delete result: {result}");
+
+    //List<Card> allCards = new List<Card>();
+
+    //allCards = unitWork.CardRepository.GetAll();
+
+    //Console.WriteLine($"Number of cards: {allCards.Count}");
+
+    Card? oldData = new Card();
+    Card? newData = new Card();
+    Card? editData = new Card();
+
+    while (cardNumber <= 100)
+    {
+        Card card = new Card()
+        {
+            Name = $"Card {cardNumber} {queryMode[currentMode]}",
+            Description = $"Description {cardNumber} {queryMode[currentMode]}",
+            Attack = cardNumber,
+            HealthPoint = cardNumber,
+            Defense = cardNumber,
+            Cost = cardNumber
+        };
+
+        newData = unitWork.CardRepository.AddReturnEntity(card);
+
+        if (newData == null)
+        {
+            Console.WriteLine($"Add card {cardNumber} not found");
+            cardNumber++;
+            continue;
+        }
+
+        Console.WriteLine($"newData.Id: {newData.Id}");
+
+        //unitWork.CardRepository.ReadFirst(unitWork.CardRepository.GetById(newData.Id));
+        unitWork.CardRepository.ReadFirst(newData);
+
+        currentMode = "Update";
+
+        Console.WriteLine(queryMode[currentMode]);
+
+        oldData = unitWork.CardRepository.GetById(newData.Id);
+
+        if (oldData == null)
+        {
+            Console.WriteLine($"Card {cardNumber} not found");
+            cardNumber++;
+            continue;
+        }
+
+        oldData.Name = $"Card {cardNumber} {queryMode[currentMode]}";
+        oldData.Description = $"Description {cardNumber} {queryMode[currentMode]}";
+        oldData.Attack = cardNumber;
+        oldData.HealthPoint = cardNumber;
+        oldData.Defense = cardNumber;
+        oldData.Cost = cardNumber;
+
+        editData = unitWork.CardRepository.UpdateReturnEntity(oldData);
+
+        if (editData == null)
+        {
+            Console.WriteLine($"Update card {cardNumber} not found");
+            cardNumber++;
+            continue;
+        }
+
+        unitWork.CardRepository.ReadFirst(editData);
+        //unitWork.CardRepository.ReadFirst(unitWork.CardRepository.GetById(editData.Id));
+
+        //unitWork.CardRepository.ReadFirst(unitWork.CardRepository.GetById(card.Id));
 
         //unitWork.CardRepository.Delete(card);
 
-        card.Name = $"Card {card.Id} Update";
-        card.Description = $"Description {card.Id} Update";
-        card.HealthPoint = -1;
-        unitWork.CardRepository.Update(card);
-        Card updatedCard = unitWork.CardRepository.GetById(card.Id);
-        Console.WriteLine($"Id: {updatedCard.Id},Name: {updatedCard.Name},Description: {updatedCard.Description} After Update");
+        cardNumber++;
     }
+
+    //allCards = unitWork.CardRepository.GetAll();
+
+    //Console.WriteLine($"Number of cards: {allCards.Count}");
 
     Console.WriteLine("Press any key to exit...");
 
@@ -77,5 +135,5 @@ try
 }
 catch (Exception ex)
 {
-    Console.WriteLine(ex.Message);
+    Console.WriteLine($"Message: {ex.Message}\nStacktrace: {ex.StackTrace}");
 }
