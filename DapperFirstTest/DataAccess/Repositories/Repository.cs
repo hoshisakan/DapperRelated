@@ -92,7 +92,15 @@ public class Repository<T> : IRepository<T> where T : class
             //Console.WriteLine(query);
 
             /// Method 1 - Using Dapper StaticParameters to create the query(avoid SQL injection attack)
-            result = this.cnn.QueryFirstOrDefault<int>(query, entity);
+            //result = this.cnn.QueryFirstOrDefault<int>(query, entity); /// Get the inserted query result code (0 = success, -1 = fail)
+
+            /// Method 2 - Using Dapper DynamicParameters to create the query(avoid SQL injection attack)
+            /// Not tested
+            //result = this.cnn.QueryFirstOrDefault<int>(query, new DynamicParameters(entity)); /// Get the inserted query result code (0 = success, -1 = fail)
+
+            /// Method 3 - Using Dapper DynamicParameters to create the query(avoid SQL injection attack)
+            /// Not tested
+            result = this.cnn.Execute(query, new DynamicParameters(entity)); /// Get the inserted query result code (1 = success, -1 = fail)
 
             return result;
         }
@@ -144,7 +152,7 @@ public class Repository<T> : IRepository<T> where T : class
 
             //Console.WriteLine(query);
 
-            newId = this.cnn.QuerySingle<int>(query, entity);
+            newId = this.cnn.QuerySingle<int>(query, entity); /// Get the new Id
 
             //Console.WriteLine(newId);
 
@@ -207,7 +215,7 @@ public class Repository<T> : IRepository<T> where T : class
             //Console.WriteLine(query);
 
             /// Method 1 - Using Dapper StaticParameters to create the query (avoid SQL injection attack)
-            result = this.cnn.Execute(query, entity);
+            result = this.cnn.Execute(query, entity); /// Return the number of rows affected
 
             return result;
         }
@@ -271,7 +279,7 @@ public class Repository<T> : IRepository<T> where T : class
             /// Method 1 - Using Dapper StaticParameters to create the query (avoid SQL injection attack)
             int editId = 0;
 
-            editId = this.cnn.QuerySingle<int>(query, entity);
+            editId = this.cnn.QuerySingle<int>(query, entity); /// Return the Id of the edited entity
 
             //Console.WriteLine(editId);
 
@@ -312,7 +320,7 @@ public class Repository<T> : IRepository<T> where T : class
             /// Method 1 - Using Dapper StaticParameters to create the query (avoid SQL injection attack)
             int result = -1;
 
-            result = this.cnn.Execute(query, entity);
+            result = this.cnn.Execute(query, entity); /// Return the number of rows affected
 
             return result;
         }
@@ -379,7 +387,7 @@ public class Repository<T> : IRepository<T> where T : class
             //Console.WriteLine(count);
 
             string query = string.Empty;
-            int result = -1;
+            int result = 0;
 
             while (count > 0)
             {
@@ -387,16 +395,7 @@ public class Repository<T> : IRepository<T> where T : class
 
                 query = $"INSERT INTO {typeof(T).Name} ({fields}) VALUES ({values})";
 
-                result = this.cnn.Execute(query, entitiesTake);
-
-                //if (result == -1)
-                //{
-                //    Console.WriteLine("Error");
-                //}
-                //else
-                //{
-                //    Console.WriteLine("Success");
-                //}
+                result += this.cnn.Execute(query, entitiesTake); /// Return the number of rows affected
 
                 //Console.WriteLine($"count: {count}, skip: {skip}, take: {take}");
 
@@ -407,6 +406,13 @@ public class Repository<T> : IRepository<T> where T : class
         }
     }
 
+    /// <summary>
+    /// The method is current best practice to update multiple records to database
+    /// But the method is not good, because it spend too much time to update
+    /// </summary>
+    /// <param name="entities"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
     public int UpdateRange(List<T> entities)
     {
         if (entities == null)
@@ -469,13 +475,58 @@ public class Repository<T> : IRepository<T> where T : class
         }
         else
         {
-            int result = -1;
+            PropertyInfo[]? entityProperties = entities.FirstOrDefault()?.GetType().GetProperties();
 
-            foreach (T entity in entities)
+            string? primaryKey = (
+                from p in entityProperties
+                select p.Name
+            ).FirstOrDefault();
+
+            if (primaryKey == null)
             {
-                result = this.Delete(entity);
+                throw new ArgumentNullException(nameof(primaryKey));
             }
 
+            Console.WriteLine(primaryKey);
+
+            int take = 1000;
+            int skip = 0;
+            int count = entities.Count();
+            int result = 0;
+
+            //Console.WriteLine(count);
+
+            int[] allIds = (
+                from e in entities
+                where e.GetType()?.GetProperty(primaryKey)?.GetValue(e) != null
+                select (int)e.GetType()?.GetProperty(primaryKey)?.GetValue(e)
+            ).ToArray();
+
+            int[] ids = new int[] { };
+
+            while (count > 0)
+            {
+                IEnumerable<T> entitiesTake = entities.Skip(skip).Take(take);
+
+                string query = $"DELETE FROM {typeof(T).Name} WHERE {primaryKey} IN @ids";
+
+                //Console.WriteLine(query);
+
+                ids = allIds.Skip(skip).Take(take).ToArray();
+
+                //Console.WriteLine($"Remove data count: {ids.Length}");
+
+                if (ids.Length > 0)
+                {
+                    //foreach (int id in ids)
+                    //{
+                    //    Console.WriteLine(id);
+                    //}
+                    result += this.cnn.Execute(query, new { ids }); /// Return the number of rows affected
+                }
+                skip += take;
+                count -= take;
+            }
             return result;
         }
     }

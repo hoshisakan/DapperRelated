@@ -41,7 +41,7 @@ try
 
     int cardNumber = 1;
     //int stopNumber = (int)Math.Pow(5, 8);
-    int stopNumber = (int)Math.Pow(10, 2);
+    int stopNumber = (int)Math.Pow(10, 4);
 
     Dictionary<string, string> queryMode = new Dictionary<string, string>()
     {
@@ -66,6 +66,7 @@ try
 
     List<Card> bulkInsertTestCards = new List<Card>();
     List<Card> bulkUpdateTestCards = new List<Card>();
+    List<Card> bulkDeleteTestCards = new List<Card>();
 
     while (cardNumber <= stopNumber)
     {
@@ -81,6 +82,10 @@ try
 
         /// For bulk insert test
         bulkInsertTestCards.Add(card);
+
+        //int result = unitWork.CardRepository.Add(card);
+
+        //Console.WriteLine($"Add card {cardNumber} result: {result}"); /// 1: success, -1: fail
 
         /// The following code is for testing add, update, delete
         //newData = unitWork.CardRepository.AddReturnEntity(card);
@@ -159,24 +164,40 @@ try
 
     Console.WriteLine($"Bulk insert result: {bulkInsertResult}");
 
-    bulkUpdateTestCards = unitWork.CardRepository.GetTakeReverse(stopNumber);
+    //unitWork.CardRepository.ReadAll(bulkInsertTestCards);
 
-    Console.WriteLine($"Number of cards: {bulkUpdateTestCards.Count}");
+    ////Thread.Sleep(10000);
 
-    foreach (Card edit in bulkUpdateTestCards)
-    {
-        edit.Name = $"Card {edit.Id} {queryMode["Update"]}";
-        edit.Description = $"Description {edit.Id} {queryMode["Update"]}";
-        edit.Attack = edit.Id;
-        edit.HealthPoint = edit.Id;
-        edit.Defense = edit.Id;
-        edit.Cost = edit.Id;
-    }
+    //bulkUpdateTestCards = unitWork.CardRepository.GetTakeReverse(stopNumber);
 
-    int bulkUpdateResult = unitWork.CardRepository.UpdateRange(bulkUpdateTestCards);
+    //Console.WriteLine($"Number of cards: {bulkUpdateTestCards.Count}");
 
-    Console.WriteLine($"Bulk update result: {bulkUpdateResult}");
+    //foreach (Card edit in bulkUpdateTestCards)
+    //{
+    //    edit.Name = $"Card {edit.Id} {queryMode["Update"]}";
+    //    edit.Description = $"Description {edit.Id} {queryMode["Update"]}";
+    //    edit.Attack = edit.Id;
+    //    edit.HealthPoint = edit.Id;
+    //    edit.Defense = edit.Id;
+    //    edit.Cost = edit.Id;
+    //}
 
+    //int bulkUpdateResult = unitWork.CardRepository.UpdateRange(bulkUpdateTestCards);
+
+    //Console.WriteLine($"Bulk update result: {bulkUpdateResult}");
+
+    //unitWork.CardRepository.ReadAll(bulkUpdateTestCards);
+
+    bulkDeleteTestCards = unitWork.CardRepository.GetTakeReverse(stopNumber);
+
+    Thread.Sleep(10000);
+
+    /// Bulk delete test
+    int bulkDeleteResult = unitWork.CardRepository.DeleteRange(bulkDeleteTestCards);
+    /// Single delete test
+    //int bulkDeleteResult = unitWork.CardRepository.Delete(bulkDeleteTestCards.First());
+
+    Console.WriteLine($"Bulk delete result: {bulkDeleteResult}");
 
     //allCards = unitWork.CardRepository.GetAll();
 
@@ -188,7 +209,7 @@ try
 
     TimeSpan ts = stopWatch.Elapsed;
 
-    string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+    string elapsedTime = string.Format("{0:00}:{1:00}:{2:00}.{3:00}",
                ts.Hours, ts.Minutes, ts.Seconds,
                       ts.Milliseconds / 10);
 
