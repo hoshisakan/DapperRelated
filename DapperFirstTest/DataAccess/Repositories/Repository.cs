@@ -23,12 +23,12 @@ public class Repository<T> : IRepository<T> where T : class
 
     public T GetFirst()
     {
-        return this.cnn.QueryFirstOrDefault<T>($"SELECT TOP 1 FROM {typeof(T).Name}");
+        return this.cnn.QueryFirstOrDefault<T>($"SELECT TOP 1 * FROM {typeof(T).Name}");
     }
 
     public T GetLast()
     {
-        return this.cnn.QueryFirstOrDefault<T>($"SELECT TOP 1 FROM {typeof(T).Name} ORDER BY Id DESC");
+        return this.cnn.QueryFirstOrDefault<T>($"SELECT TOP 1 * FROM {typeof(T).Name} ORDER BY Id DESC");
     }
 
     public T GetById(int id)
@@ -449,20 +449,33 @@ public class Repository<T> : IRepository<T> where T : class
 
             /// Method 1 - Using LINQ and String.Join method to create the query
             string updateFields = string.Join(", ", allFields.Select((f, i) => $"{f} = {allValues.ElementAt(i)}"));
-
             /// Method 2 - Using LINQ and Zip method to create the query
             //IEnumerable<string> numberFields = allFields.Zip(allValues, (f, v) => $"{f} = {v}");
             //string updateFields = numberFields.Aggregate((x, y) => x + ", " + y);
 
-            /// Beacause of the values, we need to use reflection to get the values
-            string query = $"UPDATE {typeof(T).Name} SET {updateFields} WHERE {primaryKey} = @{primaryKey}";
-            int result = -1;
+            int take = 1000;
+            int skip = 0;
+            int count = entities.Count();
 
-            //Console.WriteLine(query);
+            //Console.WriteLine(count);
 
-            /// Method 1 - Using Dapper StaticParameters to create the query (avoid SQL injection attack)
-            result = this.cnn.Execute(query, entities);
+            string query = string.Empty;
 
+            int result = 0;
+
+            while (count > 0)
+            {
+                query = $"UPDATE {typeof(T).Name} SET {updateFields} WHERE {primaryKey} = @{primaryKey}";
+
+                IEnumerable<T> entitiesTake = entities.Skip(skip).Take(take);
+
+                result += this.cnn.Execute(query, entitiesTake);
+
+                //Console.WriteLine($"count: {count}, skip: {skip}, take: {take}");
+
+                skip += take;
+                count -= take;
+            }
             return result;
         }
     }
@@ -487,7 +500,7 @@ public class Repository<T> : IRepository<T> where T : class
                 throw new ArgumentNullException(nameof(primaryKey));
             }
 
-            Console.WriteLine(primaryKey);
+            //Console.WriteLine(primaryKey);
 
             int take = 1000;
             int skip = 0;

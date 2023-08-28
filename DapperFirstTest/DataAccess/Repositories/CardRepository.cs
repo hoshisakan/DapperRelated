@@ -65,14 +65,14 @@ namespace DataAccess.Repository
         public List<Card> GetTakeSkip(int take, int skip)
         {
             return this.cnn.Query<Card>(
-                $"SELECT TOP {take} * FROM Card ORDER BY Id ASC OFFSET {skip} ROWS FETCH NEXT {take} ROWS ONLY"
+                $"SELECT * FROM Card ORDER BY Id ASC OFFSET {skip} ROWS FETCH NEXT {take} ROWS ONLY"
             ).ToList();
         }
 
         public List<Card> GetTakeSkipReverse(int take, int skip)
         {
             return this.cnn.Query<Card>(
-                $"SELECT TOP {take} * FROM Card ORDER BY Id DESC OFFSET {skip} ROWS FETCH NEXT {take} ROWS ONLY"
+                $"SELECT * FROM Card ORDER BY Id DESC OFFSET {skip} ROWS FETCH NEXT {take} ROWS ONLY"
             ).ToList();
         }
     }
