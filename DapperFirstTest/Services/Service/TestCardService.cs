@@ -2,7 +2,7 @@
 
 namespace Services.Service
 {
-    public class CardService : ICardService
+    public class TestCardService : ITestCardService
     {
         //private readonly ICardRepository cardRepository;
         //public CardService(ICardRepository cardRepository)

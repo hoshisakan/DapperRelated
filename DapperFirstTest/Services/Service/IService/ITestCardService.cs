@@ -1,6 +1,6 @@
 ﻿namespace Services.Service.IService
 {
-    public interface ICardService
+    public interface ITestCardService
     {
         //public int Add(Card card);
         //public int Update(Card card);

@@ -1,4 +1,6 @@
-﻿using DataAccess.Repository.IRepository;
+﻿using DataAccess.Repositories;
+using DataAccess.Repositories.IRepositories;
+using DataAccess.Repository.IRepository;
 using System.Data.SqlClient;
 
 namespace DataAccess.Repository
@@ -6,13 +8,15 @@ namespace DataAccess.Repository
     public class UnitWork : IUnitWork
     {
         private readonly SqlConnection cnn;
-        public ICardRepository CardRepository { get; private set; }
+        public ITestCardRepository TestCardRepository { get; private set; }
+        public IPersonRepository PersonRepository { get; private set; }
 
 
         public UnitWork(SqlConnection cnn)
         {
             this.cnn = cnn;
-            CardRepository = new CardRepository(this.cnn);
+            TestCardRepository = new TestCardRepository(this.cnn);
+            PersonRepository = new PersonRepository(this.cnn);
         }
 
         public void Dispose()

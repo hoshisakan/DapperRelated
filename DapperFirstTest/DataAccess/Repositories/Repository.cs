@@ -43,7 +43,25 @@ public class Repository<T> : IRepository<T> where T : class
 
     public List<T> GetWhere(Expression<Func<T, bool>> predicate)
     {
-        return this.cnn.Query<T>($"SELECT * FROM {typeof(T).Name} WHERE {predicate}").ToList();
+        List<string> allQueryList = new List<string>()
+        {
+            $"SELECT * FROM {typeof(T).Name} WHERE {predicate.Compile()}",
+            $"SELECT * FROM {typeof(T).Name} WHERE {predicate.Body}",
+            $"SELECT * FROM {typeof(T).Name} WHERE {predicate.Body.ToString().Replace("AndAlso", "AND").Replace("OrElse", "OR")}",
+            $"SELECT * FROM {typeof(T).Name} WHERE {predicate.Body.ToString().Replace("AndAlso", "AND").Replace("OrElse", "OR").Replace("==", "=")}",
+            $"SELECT * FROM {typeof(T).Name} WHERE {predicate.Body.ToString().Replace("AndAlso", "AND").Replace("OrElse", "OR").Replace("==", "=").Replace("True", "1").Replace("False", "0").Replace("x.", "")}",
+            $""
+        };
+
+        string query = allQueryList[5];
+
+        foreach (string temp in allQueryList)
+        {
+            Console.WriteLine(temp);
+        }
+
+        //return this.cnn.Query<T>($"SELECT * FROM {typeof(T).Name}").Where(predicate.Compile()).ToList();
+        return this.cnn.Query<T>(query).ToList();
     }
 
     /// <summary>
