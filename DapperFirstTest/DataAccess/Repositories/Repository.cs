@@ -16,6 +16,70 @@ public class Repository<T> : IRepository<T> where T : class
         this.cnn = cnn;
     }
 
+    public string GetPrimaryKeyName()
+    {
+        PropertyInfo[]? entityProperties = typeof(T).GetProperties();
+
+        string? primaryKey = null;
+
+        /// Method 1 - Using LINQ get first field to get the primary key (assuming the first field is the primary key)
+        primaryKey = (
+            from p in entityProperties
+            select p.Name
+        ).FirstOrDefault();
+
+        /// Method 2 - Using LINQ filter includes "Id" related fields to get the primary key (assuming includes "Id" realted field is the primary key)
+        //primaryKey = (
+        //    from p in entityProperties
+        //    where p.Name.Contains("Id")
+        //    select p.Name
+        //).FirstOrDefault();
+
+        /// Not working
+        //primaryKey = (
+        //    from p in entityProperties
+        //    where p.GetCustomAttributes(typeof(KeyAttribute), true).Length > 0
+        //    select p.Name
+        //).FirstOrDefault();
+
+        /// Not working
+        //foreach (PropertyInfo property in entityProperties)
+        //{
+        //    //KeyAttribute? attribute = Attribute.GetCustomAttribute(property, typeof(KeyAttribute))
+        //    //    as KeyAttribute;
+
+        //    Attribute? attribute = property.GetCustomAttribute(typeof(KeyAttribute));
+
+        //    if (attribute != null)
+        //    {
+        //        primaryKey = property.Name;
+        //        break;
+        //    }
+        //}
+
+        //entityProperties.ToList().ForEach(p =>
+        //{
+        //    Console.WriteLine($"{typeof(KeyAttribute)}");
+        //    Console.WriteLine($"Property name: {p.Name}");
+        //    Console.WriteLine($"Property type: {p.PropertyType}");
+        //    Console.WriteLine($"Property data type: {p.GetType()}");
+        //    Console.WriteLine($"Property custom attributes: {p.GetCustomAttributes()}");
+        //    Console.WriteLine($"Property custom attributes: {p.GetCustomAttributes(typeof(KeyAttribute), true)}");
+        //    Console.WriteLine($"Property custom attributes length: {p.GetCustomAttributes(typeof(KeyAttribute), true).Length}");
+        //    Console.WriteLine($"Property custom attributes length compare result: {p.GetCustomAttributes(typeof(KeyAttribute), true).Length > 0}");
+        //    Console.WriteLine("-------------------------------------------------------------------------------");
+        //});
+
+        if (primaryKey == null)
+        {
+            throw new ArgumentNullException(nameof(primaryKey));
+        }
+
+        Console.WriteLine($"Primary key name: {primaryKey}");
+
+        return primaryKey;
+    }
+
     public List<T> GetAll()
     {
         return this.cnn.Query<T>($"SELECT * FROM {typeof(T).Name}").ToList();
@@ -28,12 +92,12 @@ public class Repository<T> : IRepository<T> where T : class
 
     public T GetLast()
     {
-        return this.cnn.QueryFirstOrDefault<T>($"SELECT TOP 1 * FROM {typeof(T).Name} ORDER BY Id DESC");
+        return this.cnn.QueryFirstOrDefault<T>($"SELECT TOP 1 * FROM {typeof(T).Name} ORDER BY {GetPrimaryKeyName()} DESC");
     }
 
     public T GetById(int id)
     {
-        return this.cnn.QueryFirstOrDefault<T>($"SELECT * FROM {typeof(T).Name} WHERE Id = @Id", new { Id = id });
+        return this.cnn.QueryFirstOrDefault<T>($"SELECT * FROM {typeof(T).Name} WHERE {GetPrimaryKeyName()} = @Id", new { Id = id });
     }
 
     public int GetCount()
@@ -64,6 +128,16 @@ public class Repository<T> : IRepository<T> where T : class
         return this.cnn.Query<T>(query).ToList();
     }
 
+    public List<T> GetTake(int take)
+    {
+        return this.cnn.Query<T>($"SELECT TOP {take} * FROM {typeof(T).Name}").ToList();
+    }
+
+    public List<T> GetTakeReverse(int take)
+    {
+        return this.cnn.Query<T>($"SELECT TOP {take} * FROM {typeof(T).Name} ORDER BY {GetPrimaryKeyName()} DESC").ToList();
+    }
+
     /// <summary>
     /// Add a new entity to the database and return inserted query result code (0 = success, -1 = fail)
     /// </summary>
@@ -80,15 +154,7 @@ public class Repository<T> : IRepository<T> where T : class
         {
             PropertyInfo[]? entityProperties = entity.GetType().GetProperties();
 
-            string? primaryKey = (
-                from p in entityProperties
-                select p.Name
-            ).FirstOrDefault();
-
-            if (primaryKey == null)
-            {
-                throw new ArgumentNullException(nameof(primaryKey));
-            }
+            string primaryKey = GetPrimaryKeyName();
 
             IEnumerable<string> allFields = (
                 from f in entityProperties
@@ -140,15 +206,7 @@ public class Repository<T> : IRepository<T> where T : class
         {
             PropertyInfo[]? entityProperties = entity.GetType().GetProperties();
 
-            string? primaryKey = (
-                from p in entityProperties
-                select p.Name
-            ).FirstOrDefault();
-
-            if (primaryKey == null)
-            {
-                throw new ArgumentNullException(nameof(primaryKey));
-            }
+            string primaryKey = GetPrimaryKeyName();
 
             IEnumerable<string> allFields = (
                 from f in entityProperties
@@ -188,25 +246,7 @@ public class Repository<T> : IRepository<T> where T : class
         {
             PropertyInfo[]? entityProperties = entity.GetType().GetProperties();
 
-            /// Method 1 - Using LINQ filter includes "Id" related fields to get the primary key (assuming includes "Id" realted field is the primary key)
-            //string? primaryKey = (
-            //    from p in entityProperties
-            //    where p.Name.Contains("Id")
-            //    select p.Name
-            //).FirstOrDefault();
-
-            /// Method 2 - Using LINQ get first field to get the primary key (assuming the first field is the primary key)
-            string? primaryKey = (
-                from p in entityProperties
-                select p.Name
-            ).FirstOrDefault();
-
-            if (primaryKey == null)
-            {
-                throw new ArgumentNullException(nameof(primaryKey));
-            }
-
-            //Console.WriteLine(primaryKey);
+            string primaryKey = GetPrimaryKeyName();
 
             IEnumerable<string> allFields = (
                 from f in entityProperties
@@ -249,25 +289,7 @@ public class Repository<T> : IRepository<T> where T : class
         {
             PropertyInfo[]? entityProperties = entity.GetType().GetProperties();
 
-            /// Method 1 - Using LINQ filter includes "Id" related fields to get the primary key (assuming includes "Id" realted field is the primary key)
-            //string? primaryKey = (
-            //    from p in entityProperties
-            //    where p.Name.Contains("Id")
-            //    select p.Name
-            //).FirstOrDefault();
-
-            /// Method 2 - Using LINQ get first field to get the primary key (assuming the first field is the primary key)
-            string? primaryKey = (
-                from p in entityProperties
-                select p.Name
-            ).FirstOrDefault();
-
-            if (primaryKey == null)
-            {
-                throw new ArgumentNullException(nameof(primaryKey));
-            }
-
-            //Console.WriteLine(primaryKey);
+            string primaryKey = GetPrimaryKeyName();
 
             IEnumerable<string> allFields = (
                 from f in entityProperties
@@ -364,25 +386,7 @@ public class Repository<T> : IRepository<T> where T : class
         {
             PropertyInfo[]? entityProperties = entities.FirstOrDefault()?.GetType().GetProperties();
 
-            /// Method 1 - Using LINQ filter includes "Id" related fields to get the primary key (assuming includes "Id" realted field is the primary key)
-            //string? primaryKey = (
-            //    from p in entityProperties
-            //    where p.Name.Contains("Id")
-            //    select p.Name
-            //).FirstOrDefault();
-
-            /// Method 2 - Using LINQ get first field to get the primary key (assuming the first field is the primary key)
-            string? primaryKey = (
-                from p in entityProperties
-                select p.Name
-            ).FirstOrDefault();
-
-            if (primaryKey == null)
-            {
-                throw new ArgumentNullException(nameof(primaryKey));
-            }
-
-            //Console.WriteLine(primaryKey);
+            string primaryKey = GetPrimaryKeyName();
 
             IEnumerable<string> allFields = (
                 from f in entityProperties
@@ -441,17 +445,7 @@ public class Repository<T> : IRepository<T> where T : class
         {
             PropertyInfo[]? entityProperties = entities.FirstOrDefault()?.GetType().GetProperties();
 
-            string? primaryKey = (
-                from p in entityProperties
-                select p.Name
-            ).FirstOrDefault();
-
-            if (primaryKey == null)
-            {
-                throw new ArgumentNullException(nameof(primaryKey));
-            }
-
-            //Console.WriteLine(primaryKey);
+            string primaryKey = GetPrimaryKeyName();
 
             IEnumerable<string> allFields = (
                 from f in entityProperties
@@ -508,17 +502,7 @@ public class Repository<T> : IRepository<T> where T : class
         {
             PropertyInfo[]? entityProperties = entities.FirstOrDefault()?.GetType().GetProperties();
 
-            string? primaryKey = (
-                from p in entityProperties
-                select p.Name
-            ).FirstOrDefault();
-
-            if (primaryKey == null)
-            {
-                throw new ArgumentNullException(nameof(primaryKey));
-            }
-
-            //Console.WriteLine(primaryKey);
+            string primaryKey = GetPrimaryKeyName();
 
             int take = 1000;
             int skip = 0;
@@ -560,5 +544,10 @@ public class Repository<T> : IRepository<T> where T : class
             }
             return result;
         }
+    }
+
+    public T? GetFirstOrDefault(Expression<Func<T, bool>> predicate)
+    {
+        throw new NotImplementedException();
     }
 }

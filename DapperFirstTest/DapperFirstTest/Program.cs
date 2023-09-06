@@ -19,8 +19,8 @@ try
     /// Execute 1000 times for each method
     //s.Timer(() => dapperTest.TestByCardWithUnitWork(), 1000);
 
-    s.Timer(() => dapperTest.TestByPersonWithUnitWork());
-    s.Timer(() => dapperTest.TestByCardWithUnitWork());
+    s.Timer(() => dapperTest.TestSqlRaw());
+    //s.Timer(() => dapperTest.TestByCardWithUnitWork());
     //dapperTest.TestByCardWhereWithUnitWork();
 }
 catch (Exception ex)

@@ -51,15 +51,25 @@ namespace DataAccess.Repositories
             }
         }
 
-        public List<Person> GetTake(int take)
-        {
-            return this.cnn.Query<Person>($"SELECT TOP {take} * FROM Person").ToList();
-        }
+        /// <summary>
+        /// The method GetTake() add new for hide that base method
+        /// </summary>
+        /// <param name="skip"></param>
+        /// <returns></returns>
+        //public new List<Person> GetTake(int take)
+        //{
+        //    return this.cnn.Query<Person>($"SELECT TOP {take} * FROM Person").ToList();
+        //}
 
-        public List<Person> GetTakeReverse(int take)
-        {
-            return this.cnn.Query<Person>($"SELECT TOP {take} * FROM Person ORDER BY Id DESC").ToList();
-        }
+        /// <summary>
+        /// The method GetTakeReverse() add new for hide that base method
+        /// </summary>
+        /// <param name="skip"></param>
+        /// <returns></returns>
+        //public new List<Person> GetTakeReverse(int take)
+        //{
+        //    return this.cnn.Query<Person>($"SELECT TOP {take} * FROM Person ORDER BY Id DESC").ToList();
+        //}
 
         public List<Person> GetSkip(int skip)
         {

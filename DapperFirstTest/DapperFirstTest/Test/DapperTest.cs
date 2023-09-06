@@ -66,6 +66,38 @@ namespace DapperFirstTest.Test
 
         }
 
+        public void TestSqlRaw()
+        {
+            Person person;
+            List<Person> persons;
+
+            //person = unitWork.PersonRepository.GetFirst();
+            //unitWork.PersonRepository.ReadFirst(person);
+
+            //person = unitWork.PersonRepository.GetLast();
+            //unitWork.PersonRepository.ReadFirst(person);
+
+            persons = unitWork.PersonRepository.GetTakeReverse(10);
+            unitWork.PersonRepository.ReadAll(persons);
+
+            Console.WriteLine("----------------------------------------");
+
+            person = unitWork.PersonRepository.GetById(30000);
+            unitWork.PersonRepository.ReadFirst(person);
+
+            Console.WriteLine("----------------------------------------");
+
+            person = unitWork.PersonRepository.GetLast();
+            unitWork.PersonRepository.ReadFirst(person);
+
+            Console.WriteLine("----------------------------------------");
+
+            person = unitWork.PersonRepository.GetFirst();
+            unitWork.PersonRepository.ReadFirst(person);
+
+            Console.WriteLine("----------------------------------------");
+        }
+
         public void TestByPersonWithUnitWork()
         {
             int objNumber = 1;
@@ -96,29 +128,29 @@ namespace DapperFirstTest.Test
 
             Console.WriteLine("Start testing single update query");
 
-            /// Update
-            /// 
-            Person oldPerson = unitWork.PersonRepository.GetFirst();
+            ///// Update
+            ///// 
+            //Person oldPerson = unitWork.PersonRepository.GetFirst();
 
-            oldPerson.LastName = $"Test {queryMode[1]} LastName {oldPerson.PersonId}";
-            oldPerson.FirstName = $"Test {queryMode[1]} FirstName {oldPerson.PersonId}";
-            oldPerson.Address = $"Test {queryMode[1]} Address {oldPerson.PersonId}";
-            oldPerson.City = $"Test {queryMode[1]} City {oldPerson.PersonId}";
-            oldPerson.UpdateTime = DateTime.Now;
+            //oldPerson.LastName = $"Test {queryMode[1]} LastName {oldPerson.PersonId}";
+            //oldPerson.FirstName = $"Test {queryMode[1]} FirstName {oldPerson.PersonId}";
+            //oldPerson.Address = $"Test {queryMode[1]} Address {oldPerson.PersonId}";
+            //oldPerson.City = $"Test {queryMode[1]} City {oldPerson.PersonId}";
+            //oldPerson.UpdateTime = DateTime.Now;
 
-            Console.WriteLine("----------------------------------------");
+            //Console.WriteLine("----------------------------------------");
 
-            Console.WriteLine("Start testing single delete query");
+            //Console.WriteLine("Start testing single delete query");
 
-            /// Delete
-            /// 
-            Person person1 = unitWork.PersonRepository.GetFirst();
+            ///// Delete
+            ///// 
+            //Person person1 = unitWork.PersonRepository.GetFirst();
 
-            unitWork.PersonRepository.Delete(person1);
+            //unitWork.PersonRepository.Delete(person1);
 
-            Console.WriteLine("End testing single delete query");
+            //Console.WriteLine("End testing single delete query");
 
-            Console.WriteLine("----------------------------------------");
+            //Console.WriteLine("----------------------------------------");
 
             /// AddRange
             while (objNumber < stopNumber)
@@ -143,49 +175,51 @@ namespace DapperFirstTest.Test
 
             Console.WriteLine("----------------------------------------");
 
-            Console.WriteLine("Start testing multiple select query");
+
+
+            //Console.WriteLine("Start testing multiple select query");
 
             /// Select
-            unitWork.PersonRepository.ReadAll(
-                unitWork.PersonRepository.GetAll()
-            );
+            //unitWork.PersonRepository.ReadAll(
+            //    unitWork.PersonRepository.GetAll()
+            //);
 
-            int dataCount = unitWork.PersonRepository.GetCount();
+            //int dataCount = unitWork.PersonRepository.GetCount();
 
-            Console.WriteLine($"Data count: {dataCount}");
+            //Console.WriteLine($"Data count: {dataCount}");
 
-            Console.WriteLine($"End testing multiple select query");
+            //Console.WriteLine($"End testing multiple select query");
 
-            Console.WriteLine("----------------------------------------");
+            //Console.WriteLine("----------------------------------------");
 
-            Console.WriteLine("Start testing multiple update query");
+            //Console.WriteLine("Start testing multiple update query");
 
-            List<Person> oldPersons = unitWork.PersonRepository.GetAll();
+            //List<Person> oldPersons = unitWork.PersonRepository.GetAll();
 
-            foreach (Person item in oldPersons)
-            {
-                item.LastName = $"Test {queryMode[1]} LastName {item.PersonId}";
-                item.FirstName = $"Test {queryMode[1]} FirstName {item.PersonId}";
-                item.Address = $"Test {queryMode[1]} Address {item.PersonId}";
-                item.City = $"Test {queryMode[1]} City {item.PersonId}";
-                item.UpdateTime = DateTime.Now;
-            }
+            //foreach (Person item in oldPersons)
+            //{
+            //    item.LastName = $"Test {queryMode[1]} LastName {item.PersonId}";
+            //    item.FirstName = $"Test {queryMode[1]} FirstName {item.PersonId}";
+            //    item.Address = $"Test {queryMode[1]} Address {item.PersonId}";
+            //    item.City = $"Test {queryMode[1]} City {item.PersonId}";
+            //    item.UpdateTime = DateTime.Now;
+            //}
 
-            unitWork.PersonRepository.UpdateRange(persons);
+            //unitWork.PersonRepository.UpdateRange(persons);
 
-            Console.WriteLine("End testing multiple update query");
+            //Console.WriteLine("End testing multiple update query");
 
-            Console.WriteLine("----------------------------------------");
+            //Console.WriteLine("----------------------------------------");
 
-            Console.WriteLine("Start testing multiple delete query");
+            //Console.WriteLine("Start testing multiple delete query");
 
-            List<Person> removePeopleList = unitWork.PersonRepository.GetAll();
+            //List<Person> removePeopleList = unitWork.PersonRepository.GetAll();
 
-            unitWork.PersonRepository.DeleteRange(removePeopleList);
+            //unitWork.PersonRepository.DeleteRange(removePeopleList);
 
-            Console.WriteLine("End testing multiple delete query");
+            //Console.WriteLine("End testing multiple delete query");
 
-            Console.WriteLine("----------------------------------------");
+            //Console.WriteLine("----------------------------------------");
         }
 
         public void TestByCardWhereWithUnitWork()
