@@ -2,12 +2,8 @@
 # 這個 .gitignore 檔案由 Microsoft(R) Visual Studio 自動建立。
 ################################################################################
 
-/temp
-/DapperTraditionalTest/.vs
-/DapperTraditionalTest/obj
-/DapperTraditionalTest/bin/Debug/net6.0
-/DapperTraditionalTest/DataAccess/obj
-/DapperTraditionalTest/Utilities/obj
-/DapperTraditionalTest/DapperTraditionalTest/bin/Debug/net6.0
-/DapperTraditionalTest/DapperTraditionalTest/obj
-/DapperTraditionalTest/DataAccess/bin/Debug/net6.0
+temp
+*.zip
+*.vs
+obj
+bin
