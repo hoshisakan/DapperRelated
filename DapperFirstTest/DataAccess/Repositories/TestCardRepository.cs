@@ -1,10 +1,10 @@
 ﻿using Dapper;
-using DataAccess.Repository.IRepository;
-using Models.Model;
+using DataAccess.Repositories.IRepository;
+using Models.DataModel;
 using System.Data.SqlClient;
 
 
-namespace DataAccess.Repository
+namespace DataAccess.Repositories
 {
     public class TestCardRepository : Repository<TestCard>, ITestCardRepository
     {

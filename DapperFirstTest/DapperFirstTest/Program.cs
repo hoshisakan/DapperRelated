@@ -1,12 +1,11 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using DapperFirstTest.Test;
-using DataAccess.Helper;
+using DataAccess.Test;
+using Utilities.Helper;
+
 using System.Diagnostics;
 
-Console.WriteLine("Hello, World!");
-
-Dictionary<string, string> connectionStringDict = new Dictionary<string, string>()
+Dictionary<string, string> connectionStringDict = new Dictionary<string, string>
 {
     {"localhost", "Server=localhost;User ID=sa;Password=2wsx1qaz`;Database=TestDatabase;Encrypt=false"}
 };

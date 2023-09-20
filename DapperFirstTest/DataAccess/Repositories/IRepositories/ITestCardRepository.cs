@@ -1,6 +1,6 @@
-﻿using Models.Model;
+﻿using Models.DataModel;
 
-namespace DataAccess.Repository.IRepository
+namespace DataAccess.Repositories.IRepository
 {
     public interface ITestCardRepository : IRepository<TestCard>
     {

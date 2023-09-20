@@ -1,6 +1,6 @@
 ﻿using DataAccess.Repositories.IRepositories;
 
-namespace DataAccess.Repository.IRepository
+namespace DataAccess.Repositories.IRepository
 {
     public interface IUnitWork
     {
