@@ -1,11 +1,11 @@
 ﻿using DataAccess.Data;
 using DataAccess.Data.IData;
-using DataAccess.Repository;
-using DataAccess.Repository.IRepository;
-using Models.Model;
+using DataAccess.Repositories;
+using DataAccess.Repositories.IRepository;
+using Models.DataModel;
 using System.Data.SqlClient;
 
-namespace DapperFirstTest.Test
+namespace DataAccess.Test
 {
     public class DapperTest
     {

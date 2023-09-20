@@ -1,9 +1,9 @@
 ﻿using DataAccess.Repositories;
 using DataAccess.Repositories.IRepositories;
-using DataAccess.Repository.IRepository;
+using DataAccess.Repositories.IRepository;
 using System.Data.SqlClient;
 
-namespace DataAccess.Repository
+namespace DataAccess.Repositories
 {
     public class UnitWork : IUnitWork
     {

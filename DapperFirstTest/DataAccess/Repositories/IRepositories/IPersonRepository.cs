@@ -1,5 +1,5 @@
-﻿using DataAccess.Repository.IRepository;
-using Models.Model;
+﻿using DataAccess.Repositories.IRepository;
+using Models.DataModel;
 
 namespace DataAccess.Repositories.IRepositories
 {

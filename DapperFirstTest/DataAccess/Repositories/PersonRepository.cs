@@ -1,7 +1,7 @@
 ﻿using Dapper;
 using DataAccess.Repositories.IRepositories;
-using DataAccess.Repository;
-using Models.Model;
+using DataAccess.Repositories;
+using Models.DataModel;
 using System.Data.SqlClient;
 
 

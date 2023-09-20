@@ -1,0 +1,19 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace Models.DAO.NEC.Test;
+
+public partial class Kiosk_WhiteList
+{
+    public string Location { get; set; } = null!;
+
+    public string ID { get; set; } = null!;
+
+    public string GateNo { get; set; } = null!;
+
+    public DateTime UpdateTime { get; set; }
+
+    public DateTime? LockTime { get; set; }
+
+    public string UserID { get; set; } = null!;
+}
