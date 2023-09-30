@@ -18,7 +18,8 @@ namespace DataAccess
                 QueryTest queryTest = new QueryTest(connectionString);
                 //queryTest.TestKiosk_Parameter();
                 //queryTest.TestFileTable();
-                queryTest.TestAPLog_Parameter();
+                //queryTest.TestAPLog_Parameter();
+                queryTest.IsTableExists();
             }
             catch (Exception ex)
             {

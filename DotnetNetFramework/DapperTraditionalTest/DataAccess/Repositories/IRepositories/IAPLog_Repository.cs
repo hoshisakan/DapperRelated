@@ -1,10 +1,9 @@
-﻿using DataAccess.Repositories.IRepositories;
-using Models.DAO.NEC.Test;
-using System;
+﻿using Models.DAO.NEC.Test;
+
 
 namespace DataAccess.Repositories.IRepositories
 {
-    public interface IAPLogRepository : IRepository<APLog>
+    public interface IAPLog_Repository : IRepository<APLog>
     {
         APLog GetRecordByNameAndLogTime(string name, string logTime);
         APLog GetRecordByNameAndLogTime(string name, DateTime logTime);

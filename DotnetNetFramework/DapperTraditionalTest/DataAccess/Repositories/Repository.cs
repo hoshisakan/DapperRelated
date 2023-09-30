@@ -1,8 +1,10 @@
 ﻿using Dapper;
+using DapperTraditionalTest.Helper;
 using DataAccess.Repositories.IRepositories;
 using System.Data.SqlClient;
 using System.Linq.Expressions;
 using System.Reflection;
+using Utilities.Helper;
 using static Dapper.SqlMapper;
 
 namespace DataAccess.Repositories;
@@ -78,6 +80,18 @@ public class Repository<T> : IRepository<T> where T : class
         Console.WriteLine($"Primary key name: {primaryKey}");
 
         return primaryKey;
+    }
+
+    public bool IsTableExists()
+    {
+        //return this.cnn.Query<T>($"SELECT CASE WHEN OBJECT_ID('{typeof(T).Name}', 'U') IS NOT NULL THEN 1 ELSE 0 END").Count() > 0;
+        dynamic result = this.cnn.QueryFirst<int>($"SELECT CASE WHEN OBJECT_ID('{typeof(T).Name}', 'U') IS NOT NULL THEN 1 ELSE 0 END") > 0;
+        DebugHelper.ReadItemsOutputRawText(
+            $"Check table exists result: {result}",
+            SystemHelper.GetApplicationName(),
+            DateTimeHelper.GetNowDateFormat("yyyyMMdd")
+        );
+        return result;
     }
 
     public List<T> GetAll()

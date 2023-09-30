@@ -10,7 +10,7 @@ using Models.DAO.NEC.Test;
 
 namespace DataAccess.Repositories
 {
-    public class APLogRepository : Repository<APLog>, IAPLogRepository
+    public class APLogRepository : Repository<APLog>, IAPLog_Repository
     {
         private readonly SqlConnection cnn;
 

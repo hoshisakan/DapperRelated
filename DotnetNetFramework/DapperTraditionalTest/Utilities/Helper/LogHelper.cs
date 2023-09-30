@@ -1,4 +1,6 @@
-﻿using System;
+﻿using APWindowsTaskSchedulerMonitor.Helper;
+using DapperTraditionalTest.Helper;
+using System;
 using System.IO;
 using System.Text;
 
@@ -6,6 +8,16 @@ namespace Utilities.Helper
 {
     public class LogHelper
     {
+        private readonly static string SETTING_FILE_LOG_PATH = "CheckResultLogPath";
+        private const int LOG_SIZE_LIMIT = 209715200; // 200MB
+        private readonly static string LOG_DIR_DATE_FORMAT = "yyyyMMdd";
+        private readonly static string LOG_FILE_DATE_FORMAT = "yyyy-MM-dd";
+        private readonly static string LOG_FILE_CONTENT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.fff";
+        private readonly static string LOG_DIRNAME = DateTimeHelper.GetNowDateFormat(LOG_DIR_DATE_FORMAT);
+        private readonly static string LOG_FILENAME = DateTimeHelper.GetNowDateFormat(LOG_FILE_DATE_FORMAT);
+        private readonly static string LOG_FILE_CONTENT_DATE = DateTimeHelper.GetNowDateTimeFormat(LOG_FILE_CONTENT_DATE_FORMAT);
+
+
         public LogHelper()
         {
         }
@@ -15,27 +27,25 @@ namespace Utilities.Helper
             try
             {
                 // Log路徑
-                string logPath = ConfigurationHelper.GetLogPath("Default") ?? string.Empty;
-
-                if (string.IsNullOrEmpty(logPath))
-                {
-                    throw new Exception("Log path is empty");
-                }
+                string logPath = Path.Combine(
+                    XMLConfigurationHelper.GetXMLAppSettingConfigurationValue(SETTING_FILE_LOG_PATH),
+                    LOG_DIRNAME
+                );
 
                 // 建立資料夾
                 Directory.CreateDirectory(logPath);
 
                 string filePath = string.Empty;
-                string fileName = DateTime.Now.ToString("yyyyMMdd") + ".log";
+                string fileName = LOG_FILENAME + ".log";
 
                 int i = 0;
-                while (File.Exists(logPath + "\\" + fileName))
+                while (FileHelper.CheckFileExists(logPath + "\\" + fileName))
                 {
                     FileInfo file = new FileInfo(logPath + "\\" + fileName);
-                    if (file.Length > 209715200)
+                    if (file.Length > LOG_SIZE_LIMIT)
                     {
                         i++;
-                        fileName = DateTime.Now.ToString("yyyyMMdd") + "_" + i.ToString() + ".log";
+                        fileName = LOG_FILENAME + "-" + i.ToString() + ".log";
                     }
                     else
                     {
@@ -46,7 +56,7 @@ namespace Utilities.Helper
                 filePath = logPath + "\\" + fileName;
 
                 // 新增文字附加至檔案
-                string appendText = $"[{DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.fff")}]";
+                string appendText = $"[{LOG_FILE_CONTENT_DATE}]";
                 appendText += $"[{logMsg}]";
                 appendText += Environment.NewLine;
 
@@ -58,32 +68,98 @@ namespace Utilities.Helper
             }
         }
 
-        //public static void WriteLog(string msg)
-        //{
-        //    try
-        //    {
-        //        string sFile = Func.LogPath + "\\" + string.Format("{0:yyyyMMdd}", DateTime.Now) + ".log";
-        //        System.IO.StreamWriter sWriter = System.IO.File.AppendText(sFile);
-        //        sWriter.WriteLine(String.Format("{0:yyyyMMdd-HHmmss}", DateTime.Now) + ":" + msg);
-        //        sWriter.Close();
-        //    }
-        //    catch (Exception e) { }
-        //}
+        public static void WriteLog(string jobName, string logMsg)
+        {
+            try
+            {
+                // Log路徑
+                string logPath = Path.Combine(
+                    XMLConfigurationHelper.GetXMLAppSettingConfigurationValue(SETTING_FILE_LOG_PATH),
+                    LOG_DIRNAME
+                );
 
-        //public static void WriteLog(string log)
-        //{
-        //    try
-        //    {
-        //        string logpath = Func.LogPath + "\\log.txt";
-        //        using (System.IO.StreamWriter sw = new System.IO.StreamWriter(logpath, true))
-        //        {
-        //            sw.WriteLine(DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") + " " + log);
-        //        }
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        Console.WriteLine("Get WriteLog error! e:" + e.ToString());
-        //    }
-        //}
+                // 建立資料夾
+                Directory.CreateDirectory(logPath);
+
+                string filePath = string.Empty;
+                string fileName = $"{jobName}-{LOG_FILENAME}.log";
+
+                int i = 0;
+                while (FileHelper.CheckFileExists(logPath + "\\" + fileName))
+                {
+                    FileInfo file = new FileInfo(logPath + "\\" + fileName);
+                    if (file.Length > LOG_SIZE_LIMIT)
+                    {
+                        i++;
+                        //fileName = DateTimeHelper.GetNowDate("yyyyMMdd") + "_" + i.ToString() + ".log";
+                        fileName = $"{jobName}-{LOG_FILENAME}-{i}.log";
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                filePath = logPath + "\\" + fileName;
+
+                // 新增文字附加至檔案
+                string appendText = $"[{LOG_FILE_CONTENT_DATE}]";
+                appendText += $"[{logMsg}]";
+                appendText += Environment.NewLine;
+
+                File.AppendAllText(filePath, appendText, Encoding.UTF8);
+            }
+            catch (Exception)
+            {
+                return;
+            }
+        }
+
+        public static void WriteLog(string jobName, string jobLogDate, string logMsg)
+        {
+            try
+            {
+                // Log路徑
+                string logPath = Path.Combine(
+                    XMLConfigurationHelper.GetXMLAppSettingConfigurationValue(SETTING_FILE_LOG_PATH),
+                    jobLogDate.Replace("-", "")
+                );
+
+                // 建立資料夾
+                Directory.CreateDirectory(logPath);
+
+                string filePath = string.Empty;
+                string fileName = $"{jobName}-{jobLogDate}.log";
+
+                int i = 0;
+                while (FileHelper.CheckFileExists(logPath + "\\" + fileName))
+                {
+                    FileInfo file = new FileInfo(logPath + "\\" + fileName);
+                    if (file.Length > LOG_SIZE_LIMIT)
+                    {
+                        i++;
+                        //fileName = DateTimeHelper.GetNowDate("yyyyMMdd") + "_" + i.ToString() + ".log";
+                        fileName = $"{jobName}-{jobLogDate}-{i}.log";
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                filePath = logPath + "\\" + fileName;
+
+                // 新增文字附加至檔案
+                string appendText = $"[{LOG_FILE_CONTENT_DATE}]";
+                appendText += $"[{logMsg}]";
+                appendText += Environment.NewLine;
+
+                File.AppendAllText(filePath, appendText, Encoding.UTF8);
+            }
+            catch (Exception)
+            {
+                return;
+            }
+        }
     }
 }

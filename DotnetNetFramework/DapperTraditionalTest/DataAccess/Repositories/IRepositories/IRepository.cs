@@ -4,6 +4,7 @@ namespace DataAccess.Repositories.IRepositories
 {
     public interface IRepository<T> where T : class
     {
+        public bool IsTableExists();
         public List<T> GetAll();
         public IQueryable GetAllOri();
         public T? GetFirstOrDefault(Expression<Func<T, bool>> predicate);

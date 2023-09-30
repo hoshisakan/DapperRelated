@@ -5,12 +5,7 @@ using DataAccess.Repositories;
 using DataAccess.Repositories.IRepositories;
 using Models.DAO.NEC.Test;
 
-using System;
-using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Models.DataModel.APLog;
 
 namespace DapperTraditionalTest.Test
@@ -27,6 +22,13 @@ namespace DapperTraditionalTest.Test
             dbContextInitialize = new DbContextInitialize(connectionString);
             cnn = dbContextInitialize.Initialize();
             unitWork = new UnitWork(this.cnn);
+        }
+
+        public void IsTableExists()
+        {
+            unitWork.APLog_Repository.IsTableExists();
+            unitWork.FileTable_Repository.IsTableExists();
+            unitWork.Kiosk_TblMember_Repository.IsTableExists();
         }
 
         public void TestAPLog_Parameter()
