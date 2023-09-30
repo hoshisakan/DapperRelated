@@ -1,12 +1,12 @@
-﻿using DapperWithDependencyInjection.Test;
-using Utilities.Helper;
-using Utilities.Status;
+﻿using Utilities.Helper;
 using DapperWithDependencyInjection.Extensions;
 using DapperWithDependencyInjection.Test.ITest;
 
 using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using Utilities.Enums;
+
 
 namespace DapperWithDependencyInjection
 {
@@ -40,12 +40,17 @@ namespace DapperWithDependencyInjection
                 Stopwatch s = new Stopwatch();
                 /// Execute 1000 times for each method
                 //s.Timer(() => dapperTest.TestByCardWithUnitWork(), 1000);
-                s.Timer(() => dapperTest.TestSqlRaw());
+                //s.Timer(() => dapperTest.TestSqlRaw());
                 //s.Timer(() => dapperTest.TestByCardWithUnitWork());
+                s.Timer(() => dapperTest.TestIsTableExists());
+                s.Timer(() => dapperTest.TestTakeRelatedMethods());
+                s.Timer(() => dapperTest.TestSkipRelatedMethods());
+                s.Timer(() => dapperTest.TestTakeAndSkipRelatedMethods());
+                s.Timer(() => dapperTest.TestWriteMessageToLogFile());
             }
             catch (Exception ex)
             {
-                DebugHelper.ReadItemsOutputRawText(ex.ToString(), LogLevelStatus.Error, DateTime.Now.ToString("yyyyMMdd"));
+                LogHelper.WriteLog(LogLevelEnum.ERROR, ex.ToString());
             }
             finally
             {

@@ -3,6 +3,10 @@ using System.Configuration;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Diagnostics;
+using Utilities.Enums;
 
 namespace Utilities.Helper
 {
@@ -41,7 +45,7 @@ namespace Utilities.Helper
                 }
                 catch (Exception ex)
                 {
-                    LogHelper.WriteLog($"GetLocalIPAddress error! e: {ex.Message}\n{ex.StackTrace}", $"{GetApplicationName()}-Error", DateTimeHelper.GetNowDateTimeFormat("yyyyMMdd"));
+                    LogHelper.WriteLog(LogLevelEnum.ERROR, ex.ToString());
                 }
             }
             return localIP;
@@ -63,14 +67,17 @@ namespace Utilities.Helper
         //    }
         //    catch (Exception ex)
         //    {
-        //        LogHelper.WriteLog($"GetLocalIPAddress error! e: {ex.Message}\n{ex.StackTrace}", $"{GetApplicationName()}-Error", DateTimeHelper.GetNowDateTimeFormat("yyyyMMdd"));
+        //        LogHelper.WriteLog(LogLevelEnum.ERROR, ex.ToString());
+
         //    }
         //    return string.Empty;
         //}
 
-        public static readonly Func<string> GetApplicationName = () => System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
+        public static readonly Func<string> GetApplicationName = () => Assembly.GetEntryAssembly().GetName().Name;
 
-        public static readonly Func<string> GetApplicationVersion = () => System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        public static readonly Func<string> GetCurrentApplicationName = () => Assembly.GetExecutingAssembly().GetName().Name;
+
+        public static readonly Func<string> GetApplicationVersion = () => Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
         public static readonly Func<string> GetHostName = () => Dns.GetHostName();
 

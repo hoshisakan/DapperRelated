@@ -6,12 +6,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Models.DataModel.ConfigurationRelated;
+using Utilities.Enums;
 
 namespace Utilities.Helper
 {
     public class XMLConfigurationHelper
     {
-        public static string GetXMLConnectionStringConfigurationValue(string key)
+        public static string GetConnectionStringConfigurationValue(string key)
         {
             string value = string.Empty;
             try
@@ -20,12 +21,12 @@ namespace Utilities.Helper
             }
             catch (Exception ex)
             {
-                DebugHelper.ReadItemsOutputRawText(ex.Message, "GetXMLConnectionStringConfigurationValue", DateTime.Now.ToString("yyyyMMdd"));
+                LogHelper.WriteLog(LogLevelEnum.ERROR, ex.ToString());
             }
             return value;
         }
 
-        public static string GetXMLAppSettingConfigurationValue(string key)
+        public static string GetAppSettingConfigurationValue(string key)
         {
             string value = string.Empty;
             try
@@ -34,12 +35,12 @@ namespace Utilities.Helper
             }
             catch (Exception ex)
             {
-                DebugHelper.ReadItemsOutputRawText(ex.Message, "GetXMLAppSettingConfigurationValue", DateTime.Now.ToString("yyyyMMdd"));
+                LogHelper.WriteLog(LogLevelEnum.ERROR, ex.ToString());
             }
             return value;
         }
 
-        public static bool SetXMLAppSettingConfigurationValue(string key, string modifiedValue)
+        public static bool SetAppSettingConfigurationValue(string key, string modifiedValue)
         {
             bool isModifiedSuccessfully = false;
 
@@ -50,11 +51,11 @@ namespace Utilities.Helper
                 config.Save(ConfigurationSaveMode.Full, true);
                 ConfigurationManager.RefreshSection("appSettings");
 
-                Console.WriteLine(GetXMLAppSettingConfigurationValue(key));
+                Console.WriteLine(GetAppSettingConfigurationValue(key));
             } 
             catch (Exception ex)
             {
-                DebugHelper.ReadItemsOutputRawText(ex.Message, "GetXMLAppSettingConfigurationValue", DateTime.Now.ToString("yyyyMMdd"));
+                LogHelper.WriteLog(LogLevelEnum.ERROR, ex.ToString());
             }
             return isModifiedSuccessfully;
         }
@@ -81,12 +82,12 @@ namespace Utilities.Helper
                 ConfigurationManager.RefreshSection("appSettings");
 
                 updateXMLConfigurationValueResult.SettingFileKey = parameters.SettingFileKey;
-                updateXMLConfigurationValueResult.ModifiedValue = GetXMLAppSettingConfigurationValue(parameters.Key);
+                updateXMLConfigurationValueResult.ModifiedValue = GetAppSettingConfigurationValue(parameters.Key);
                 updateXMLConfigurationValueResult.IsModifiedSuccessfully = true;
             }
             catch (Exception ex)
             {
-                DebugHelper.ReadItemsOutputRawText(ex.Message, "GetXMLAppSettingConfigurationValue", DateTime.Now.ToString("yyyyMMdd"));
+                LogHelper.WriteLog(LogLevelEnum.ERROR, ex.ToString());
             }
             return updateXMLConfigurationValueResult;
         }

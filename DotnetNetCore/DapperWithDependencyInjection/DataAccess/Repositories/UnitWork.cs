@@ -1,20 +1,21 @@
 ﻿using DataAccess.Data;
+using DataAccess.Data.IData;
 using DataAccess.Repositories;
 using DataAccess.Repositories.IRepositories;
 using DataAccess.Repositories.IRepository;
+using Microsoft.Extensions.Configuration;
 using System.Data.SqlClient;
 
 namespace DataAccess.Repositories
 {
     public class UnitWork : IUnitWork
     {
-        //private readonly SqlConnection cnn;
-        private readonly DapperConnectionProvider _dapperProvider;
+        private readonly IDapperConnectionProvider _dapperProvider;
         public ITestCardRepository TestCardRepository { get; private set; }
         public IPersonRepository PersonRepository { get; private set; }
 
 
-        public UnitWork(DapperConnectionProvider dapperProvider)
+        public UnitWork(IDapperConnectionProvider dapperProvider)
         {
             _dapperProvider = dapperProvider;
             TestCardRepository = new TestCardRepository(_dapperProvider);

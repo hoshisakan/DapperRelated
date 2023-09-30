@@ -1,20 +1,21 @@
-﻿using Dapper;
-using DataAccess.Data;
+﻿using DataAccess.Data.IData;
 using DataAccess.Repositories.IRepository;
-using System.Data.SqlClient;
+using Utilities.Enums;
+using Utilities.Helper;
+using static Dapper.SqlMapper;
+
+using Dapper;
 using System.Linq.Expressions;
 using System.Reflection;
-using Utilities.Helper;
-using Utilities.Status;
-using static Dapper.SqlMapper;
+
 
 namespace DataAccess.Repositories
 {
     public class Repository<T> : IRepository<T> where T : class
     {
-        private readonly DapperConnectionProvider _dapperProvider;
+        private readonly IDapperConnectionProvider _dapperProvider;
 
-        public Repository(DapperConnectionProvider dapperProvider)
+        public Repository(IDapperConnectionProvider dapperProvider)
         {
             _dapperProvider = dapperProvider;
         }
@@ -36,7 +37,7 @@ namespace DataAccess.Repositories
                 throw new ArgumentNullException(nameof(primaryKey));
             }
 
-            DebugHelper.ReadItemsOutputRawText($"Primary key name: {primaryKey}", LogLevelStatus.Information, DateTimeHelper.GetNowDateFormat("yyyyMMdd"));
+            LogHelper.WriteLog(LogLevelEnum.DEBUG, nameof(GetPrimaryKeyName), $"Primary key name: {primaryKey}");
 
             return primaryKey;
         }
@@ -79,10 +80,11 @@ namespace DataAccess.Repositories
             };
 
             string query = allQueryList[5];
+            string methodName = nameof(GetWhere);
 
             foreach (string temp in allQueryList)
             {
-                DebugHelper.ReadItemsOutputRawText($"Current read query: {temp}", "GetPrimaryKeyName", DateTimeHelper.GetNowDateFormat("yyyyMMdd"));
+                LogHelper.WriteLog(LogLevelEnum.DEBUG, methodName, $"Current read query: {temp}");
             }
 
             //return _dapperProvider.Connect().Query<T>($"SELECT * FROM {typeof(T).Name}").Where(predicate.Compile()).ToList();
@@ -97,6 +99,30 @@ namespace DataAccess.Repositories
         public List<T> GetTakeReverse(int take)
         {
             return _dapperProvider.Connect().Query<T>($"SELECT TOP {take} * FROM {typeof(T).Name} ORDER BY {GetPrimaryKeyName()} DESC").ToList();
+        }
+
+        public List<T> GetSkip(int skip)
+        {
+            return _dapperProvider.Connect().Query<T>($"SELECT * FROM {typeof(T).Name} ORDER BY {GetPrimaryKeyName()} ASC OFFSET {skip} ROWS").ToList();
+        }
+
+        public List<T> GetSkipReverse(int skip)
+        {
+            return _dapperProvider.Connect().Query<T>($"SELECT * FROM {typeof(T).Name} ORDER BY {GetPrimaryKeyName()} DESC OFFSET {skip} ROWS").ToList();
+        }
+
+        public List<T> GetTakeSkip(int take, int skip)
+        {
+            return _dapperProvider.Connect().Query<T>(
+                $"SELECT * FROM {typeof(T).Name} ORDER BY {GetPrimaryKeyName()} ASC OFFSET {skip} ROWS FETCH NEXT {take} ROWS ONLY"
+            ).ToList();
+        }
+
+        public List<T> GetTakeSkipReverse(int take, int skip)
+        {
+            return _dapperProvider.Connect().Query<T>(
+                $"SELECT * FROM {typeof(T).Name} ORDER BY {GetPrimaryKeyName()} DESC OFFSET {skip} ROWS FETCH NEXT {take} ROWS ONLY"
+            ).ToList();
         }
 
         /// <summary>
@@ -494,10 +520,6 @@ namespace DataAccess.Repositories
 
                     if (ids.Length > 0)
                     {
-                        //foreach (int id in ids)
-                        //{
-                        //    Console.WriteLine(id);
-                        //}
                         result += _dapperProvider.Connect().Execute(query, new { ids }); /// Return the number of rows affected
                     }
                     skip += take;
@@ -506,10 +528,15 @@ namespace DataAccess.Repositories
                 return result;
             }
         }
-
         public T? GetFirstOrDefault(Expression<Func<T, bool>> predicate)
         {
             throw new NotImplementedException();
+        }
+
+        public bool IsTableExists()
+        {
+            int result = _dapperProvider.Connect().QueryFirst<int>($"SELECT CASE WHEN OBJECT_ID('{typeof(T).Name}', 'U') IS NOT NULL THEN 1 ELSE 0 END");
+            return result > 0;
         }
     }
 }

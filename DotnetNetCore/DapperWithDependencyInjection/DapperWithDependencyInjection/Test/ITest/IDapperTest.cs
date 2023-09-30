@@ -8,6 +8,11 @@ namespace DapperWithDependencyInjection.Test.ITest
 {
     public interface IDapperTest
     {
+        void TestWriteMessageToLogFile();
+        void TestTakeRelatedMethods();
+        void TestSkipRelatedMethods();
+        void TestTakeAndSkipRelatedMethods();
+        void TestIsTableExists();
         void TestByCard();
         void TestByPerson();
         void TestSqlRaw();

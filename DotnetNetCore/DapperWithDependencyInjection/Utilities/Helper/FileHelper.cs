@@ -1,7 +1,5 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using Utilities.Status;
+﻿using Utilities.Enums;
+
 
 namespace Utilities.Helper
 {
@@ -50,7 +48,7 @@ namespace Utilities.Helper
             }
             catch (Exception ex)
             {
-                DebugHelper.ReadItemsOutputRawText(ex.ToString(), LogLevelStatus.Error, DateTime.Now.ToString("yyyyMMdd"));
+                LogHelper.WriteLog(LogLevelEnum.ERROR, ex.ToString());  
                 return "fail";
             }
         }
@@ -74,7 +72,7 @@ namespace Utilities.Helper
             }
             catch (Exception ex)
             {
-                DebugHelper.ReadItemsOutputRawText(ex.ToString(), LogLevelStatus.Error, DateTime.Now.ToString("yyyyMMdd"));
+                LogHelper.WriteLog(LogLevelEnum.ERROR, ex.ToString());
             }
         }
 
@@ -99,7 +97,7 @@ namespace Utilities.Helper
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLog("CheckTextExists", DateTime.Now.ToString("yyyyMMdd"), ex.Message);
+                LogHelper.WriteLog(LogLevelEnum.ERROR, ex.ToString());
             }
             return result;
         }
@@ -135,7 +133,7 @@ namespace Utilities.Helper
             }
             catch (Exception ex)
             {
-                DebugHelper.ReadItemsOutputRawText(ex.ToString(), LogLevelStatus.Error, DateTime.Now.ToString("yyyyMMdd"));
+                LogHelper.WriteLog(LogLevelEnum.ERROR, ex.ToString());
             }
             return result;
         }
@@ -156,7 +154,7 @@ namespace Utilities.Helper
             }
             catch (Exception ex)
             {
-                DebugHelper.ReadItemsOutputRawText(ex.ToString(), LogLevelStatus.Error, DateTime.Now.ToString("yyyyMMdd"));
+                LogHelper.WriteLog(LogLevelEnum.ERROR, ex.ToString());
                 return "fail";
             }
         }
@@ -180,7 +178,7 @@ namespace Utilities.Helper
             }
             catch (Exception ex)
             {
-                DebugHelper.ReadItemsOutputRawText(ex.ToString(), LogLevelStatus.Error, DateTime.Now.ToString("yyyyMMdd"));
+                LogHelper.WriteLog(LogLevelEnum.ERROR, ex.ToString());
                 return "fail";
             }
         }
