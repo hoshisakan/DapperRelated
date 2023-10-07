@@ -1,18 +1,23 @@
-﻿using Models.DataModel;
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Configuration;
+
 using Models.DataModel.ConfigurationRelated;
 using Utilities.Enums;
+using Utilities.Helper.IHelper;
+
 
 namespace Utilities.Helper
 {
-    public class XMLConfigurationHelper
+    public class XMLConfigurationHelper : IXMLConfigurationHelper
     {
-        public static string GetConnectionStringConfigurationValue(string key)
+        private readonly string className = nameof(XMLConfigurationHelper);
+        public readonly Lazy<ILoggerHelper> _loggerHelper;
+
+        public XMLConfigurationHelper(Lazy<ILoggerHelper> loggerHelper)
+        {
+            this._loggerHelper = loggerHelper;
+        }
+
+        public string GetConnectionStringConfigurationValue(string key)
         {
             string value = string.Empty;
             try
@@ -21,12 +26,12 @@ namespace Utilities.Helper
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLog(LogLevelEnum.ERROR, ex.ToString());
+                _loggerHelper.Value.LogError(ex.ToString());
             }
             return value;
         }
 
-        public static string GetAppSettingConfigurationValue(string key)
+        public string GetAppSettingConfigurationValue(string key)
         {
             string value = string.Empty;
             try
@@ -35,12 +40,12 @@ namespace Utilities.Helper
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLog(LogLevelEnum.ERROR, ex.ToString());
+                _loggerHelper.Value.LogError(ex.ToString());
             }
             return value;
         }
 
-        public static bool SetAppSettingConfigurationValue(string key, string modifiedValue)
+        public bool SetAppSettingConfigurationValue(string key, string modifiedValue)
         {
             bool isModifiedSuccessfully = false;
 
@@ -55,12 +60,12 @@ namespace Utilities.Helper
             } 
             catch (Exception ex)
             {
-                LogHelper.WriteLog(LogLevelEnum.ERROR, ex.ToString());
+                _loggerHelper.Value.LogError(ex.ToString());
             }
             return isModifiedSuccessfully;
         }
 
-        public static UpdateXMLConfigurationValueResult SetXMLAppSettingConfigurationValue(SetXMLAppSettingConfigurationParameters parameters)
+        public UpdateXMLConfigurationValueResult SetXMLAppSettingConfigurationValue(SetXMLAppSettingConfigurationParameters parameters)
         {
             UpdateXMLConfigurationValueResult updateXMLConfigurationValueResult = new UpdateXMLConfigurationValueResult();
 
@@ -87,7 +92,7 @@ namespace Utilities.Helper
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLog(LogLevelEnum.ERROR, ex.ToString());
+                _loggerHelper.Value.LogError(ex.ToString());
             }
             return updateXMLConfigurationValueResult;
         }

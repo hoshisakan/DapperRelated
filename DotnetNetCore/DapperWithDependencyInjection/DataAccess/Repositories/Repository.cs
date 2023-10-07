@@ -7,17 +7,20 @@ using static Dapper.SqlMapper;
 using Dapper;
 using System.Linq.Expressions;
 using System.Reflection;
-
+using Utilities.Helper.IHelper;
 
 namespace DataAccess.Repositories
 {
     public class Repository<T> : IRepository<T> where T : class
     {
         private readonly IDapperConnectionProvider _dapperProvider;
+        private readonly ILoggerHelper _loggerHelper;
+        private readonly string className = nameof(Repository<T>);
 
-        public Repository(IDapperConnectionProvider dapperProvider)
+        public Repository(IDapperConnectionProvider dapperProvider, ILoggerHelper loggerHelper)
         {
             _dapperProvider = dapperProvider;
+            _loggerHelper = loggerHelper;
         }
 
         public string GetPrimaryKeyName()
@@ -37,7 +40,7 @@ namespace DataAccess.Repositories
                 throw new ArgumentNullException(nameof(primaryKey));
             }
 
-            LogHelper.WriteLog(LogLevelEnum.DEBUG, nameof(GetPrimaryKeyName), $"Primary key name: {primaryKey}");
+            _loggerHelper.LogDebug($"Primary key name: {primaryKey}", className, nameof(GetPrimaryKeyName));
 
             return primaryKey;
         }
@@ -84,7 +87,7 @@ namespace DataAccess.Repositories
 
             foreach (string temp in allQueryList)
             {
-                LogHelper.WriteLog(LogLevelEnum.DEBUG, methodName, $"Current read query: {temp}");
+                _loggerHelper.LogDebug($"Current read query: {temp}", className, methodName);
             }
 
             //return _dapperProvider.Connect().Query<T>($"SELECT * FROM {typeof(T).Name}").Where(predicate.Compile()).ToList();

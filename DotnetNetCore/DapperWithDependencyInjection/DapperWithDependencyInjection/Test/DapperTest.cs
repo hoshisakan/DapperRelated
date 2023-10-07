@@ -4,17 +4,23 @@ using DataAccess.Repositories.IRepository;
 using Models.DAO.TestDatabase;
 using Utilities.Enums;
 using Utilities.Helper;
+using Utilities.Helper.IHelper;
 
 
 namespace DapperWithDependencyInjection.Test
 {
     public class DapperTest : IDapperTest
     {
+        private readonly ILoggerHelper _loggerHelper;
+        private readonly IJsonHelper _jsonHelper;
         private readonly IUnitWork _unitWork;
         private readonly string[] queryMode = new string[] { "Create", "Update", "Delete", "Select" };
+        private readonly string className = nameof(DapperTest);
 
-        public DapperTest(IUnitWork unitWork)
+        public DapperTest(IUnitWork unitWork, ILoggerHelper loggerHelper, IJsonHelper jsonHelper)
         {
+            _loggerHelper = loggerHelper;
+            _jsonHelper = jsonHelper;
             _unitWork = unitWork;
         }
 
@@ -22,114 +28,60 @@ namespace DapperWithDependencyInjection.Test
         {
             string methodName = nameof(TestWriteMessageToLogFile);
 
-            LogHelper.WriteLog(
-                LogLevelEnum.ALL,
-                methodName,
-                $"Write a message to log file for new log write method test."
+            _loggerHelper.LogDebug(
+                $"Write a message to log file for new log write method test.",
+                className,
+                methodName 
             );
-            LogHelper.WriteLog(
-                LogLevelEnum.TRACE,
-                methodName,
-                $"Write a message to log file for new log write method test."
+            _loggerHelper.LogDebug(
+                $"Write a message to log file for new log write method test.",
+                className,
+                methodName
             );
-            LogHelper.WriteLog(
-                LogLevelEnum.DEBUG,
-                methodName,
-                $"Write a message to log file for new log write method test."
+            _loggerHelper.LogDebug(
+                $"Write a message to log file for new log write method test.",
+                className,
+                methodName
             );
-            LogHelper.WriteLog(
-                LogLevelEnum.INFO,
-                methodName,
-                $"Write a message to log file for new log write method test."
-            );
+            _loggerHelper.LogDebug($"Write a message to log file for new log write method test.", className, methodName);
 
-            LogHelper.WriteLog(
-                LogLevelEnum.WARN,
-                methodName,
-                $"Write a message to log file for new log write method test."
-            );
+            _loggerHelper.LogDebug($"Write a message to log file for new log write method test.", className, methodName);
 
-            LogHelper.WriteLog(
-                LogLevelEnum.ERROR,
-                methodName, 
-                $"Write a message to log file for new log write method test."
-            );
+            _loggerHelper.LogDebug($"Write a message to log file for new log write method test.", className, methodName);
 
-            LogHelper.WriteLog(
-                LogLevelEnum.FATAL,
-                methodName, 
-                $"Write a message to log file for new log write method test."
-            );
+            _loggerHelper.LogDebug($"Write a message to log file for new log write method test.", className, methodName);
 
-            LogHelper.WriteLog(
-                LogLevelEnum.OFF,
-                methodName, 
-                $"Write a message to log file for new log write method test."
-            );
-
-            //LogHelper.WriteLog<DapperTest>(
-            //    LogLevelEnum.ALL,
-            //    $"Write a message to log file for new log write method test."
-            //);
-            //LogHelper.WriteLog<DapperTest>(
-            //    LogLevelEnum.TRACE,
-            //    $"Write a message to log file for new log write method test."
-            //);
-            //LogHelper.WriteLog<DapperTest>(
-            //    LogLevelEnum.DEBUG,
-            //    $"Write a message to log file for new log write method test."
-            //);
-            //LogHelper.WriteLog<DapperTest>(
-            //    LogLevelEnum.INFO,
-            //    $"Write a message to log file for new log write method test."
-            //);
-
-            //LogHelper.WriteLog<DapperTest>(
-            //    LogLevelEnum.WARN,
-            //    $"Write a message to log file for new log write method test."
-            //);
-
-            //LogHelper.WriteLog<DapperTest>(
-            //    LogLevelEnum.ERROR,
-            //    $"Write a message to log file for new log write method test."
-            //);
-
-            //LogHelper.WriteLog<DapperTest>(
-            //    LogLevelEnum.FATAL,
-            //    $"Write a message to log file for new log write method test."
-            //);
-
-            //LogHelper.WriteLog<DapperTest>(
-            //    LogLevelEnum.OFF,
-            //    $"Write a message to log file for new log write method test."
-            //);
+            _loggerHelper.LogDebug($"Write a message to log file for new log write method test.", className, methodName);
         }
 
         public void TestTakeRelatedMethods()
         {
             string methodName = nameof(TestTakeRelatedMethods);
-            LogHelper.WriteLog(LogLevelEnum.DEBUG, methodName, JsonHelper.Serialize(_unitWork.TestCardRepository.GetTake(10)));
-            LogHelper.WriteLog(LogLevelEnum.DEBUG, methodName, JsonHelper.Serialize(_unitWork.TestCardRepository.GetTakeReverse(10)));
-            LogHelper.WriteLog(LogLevelEnum.DEBUG, methodName, JsonHelper.Serialize(_unitWork.PersonRepository.GetTake(10)));
-            LogHelper.WriteLog(LogLevelEnum.DEBUG, methodName, JsonHelper.Serialize(_unitWork.PersonRepository.GetTakeReverse(10)));
+
+            _loggerHelper.LogDebug(_jsonHelper.Serialize(_unitWork.TestCardRepository.GetTake(10)), className, methodName);
+            _loggerHelper.LogDebug(_jsonHelper.Serialize(_unitWork.TestCardRepository.GetTakeReverse(10)), className, methodName);
+            _loggerHelper.LogDebug(_jsonHelper.Serialize(_unitWork.PersonRepository.GetTake(10)), className, methodName);
+            _loggerHelper.LogDebug(_jsonHelper.Serialize(_unitWork.PersonRepository.GetTakeReverse(10)), className, methodName);
         }
 
         public void TestSkipRelatedMethods()
         {
             string methodName = nameof(TestSkipRelatedMethods);
-            LogHelper.WriteLog(LogLevelEnum.DEBUG, methodName, JsonHelper.Serialize(_unitWork.TestCardRepository.GetSkip(10)));
-            LogHelper.WriteLog(LogLevelEnum.DEBUG, methodName, JsonHelper.Serialize(_unitWork.TestCardRepository.GetSkipReverse(10)));
-            LogHelper.WriteLog(LogLevelEnum.DEBUG, methodName, JsonHelper.Serialize(_unitWork.PersonRepository.GetSkip(10)));
-            LogHelper.WriteLog(LogLevelEnum.DEBUG, methodName, JsonHelper.Serialize(_unitWork.PersonRepository.GetSkipReverse(10)));
+
+
+            _loggerHelper.LogDebug(_jsonHelper.Serialize(_unitWork.TestCardRepository.GetSkip(10)), className, methodName);
+            _loggerHelper.LogDebug(_jsonHelper.Serialize(_unitWork.TestCardRepository.GetSkipReverse(10)), className, methodName);
+            _loggerHelper.LogDebug(_jsonHelper.Serialize(_unitWork.PersonRepository.GetSkip(10)), className, methodName);
+            _loggerHelper.LogDebug(_jsonHelper.Serialize(_unitWork.PersonRepository.GetSkipReverse(10)), className, methodName);
         }
 
         public void TestTakeAndSkipRelatedMethods()
         {
             string methodName = nameof(TestTakeAndSkipRelatedMethods);
-            LogHelper.WriteLog(LogLevelEnum.DEBUG, methodName, JsonHelper.Serialize(_unitWork.TestCardRepository.GetTakeSkip(10, 10)));
-            LogHelper.WriteLog(LogLevelEnum.DEBUG, methodName, JsonHelper.Serialize(_unitWork.TestCardRepository.GetTakeSkipReverse(10, 10)));
-            LogHelper.WriteLog(LogLevelEnum.DEBUG, methodName, JsonHelper.Serialize(_unitWork.PersonRepository.GetTakeSkip(10, 10)));
-            LogHelper.WriteLog(LogLevelEnum.DEBUG, methodName, JsonHelper.Serialize(_unitWork.PersonRepository.GetTakeSkipReverse(10, 10)));
+            _loggerHelper.LogDebug(_jsonHelper.Serialize(_unitWork.TestCardRepository.GetTakeSkip(10, 10)), className, methodName);
+            _loggerHelper.LogDebug(_jsonHelper.Serialize(_unitWork.TestCardRepository.GetTakeSkipReverse(10, 10)), className, methodName);
+            _loggerHelper.LogDebug(_jsonHelper.Serialize(_unitWork.PersonRepository.GetTakeSkip(10, 10)), className, methodName);
+            _loggerHelper.LogDebug(_jsonHelper.Serialize(_unitWork.PersonRepository.GetTakeSkipReverse(10, 10)), className, methodName);
         }
 
         public void TestIsTableExists()
@@ -138,11 +90,11 @@ namespace DapperWithDependencyInjection.Test
 
             bool isTestCardTableExist = _unitWork.TestCardRepository.IsTableExists();
 
-            LogHelper.WriteLog(LogLevelEnum.DEBUG, methodName, JsonHelper.Serialize(isTestCardTableExist));
+            _loggerHelper.LogDebug(_jsonHelper.Serialize(isTestCardTableExist), className, methodName);
 
             bool isPersonTableExist = _unitWork.PersonRepository.IsTableExists();
 
-            LogHelper.WriteLog(LogLevelEnum.DEBUG, methodName, JsonHelper.Serialize(isPersonTableExist));
+            _loggerHelper.LogDebug(_jsonHelper.Serialize(isPersonTableExist), className, methodName);
         }
 
         public void TestByCard()
@@ -162,22 +114,22 @@ namespace DapperWithDependencyInjection.Test
             string methodName = nameof(TestSqlRaw);
 
             person = _unitWork.PersonRepository.GetFirst();
-            LogHelper.WriteLog(LogLevelEnum.DEBUG, methodName, JsonHelper.Serialize(person));
+            _loggerHelper.LogDebug(_jsonHelper.Serialize(person), className, methodName);
 
             person = _unitWork.PersonRepository.GetLast();
-            LogHelper.WriteLog(LogLevelEnum.DEBUG, methodName, JsonHelper.Serialize(person));
+            _loggerHelper.LogDebug(_jsonHelper.Serialize(person), className, methodName);
 
             persons = _unitWork.PersonRepository.GetTakeReverse(10);
-            LogHelper.WriteLog(LogLevelEnum.DEBUG, methodName, JsonHelper.Serialize(persons));
+            _loggerHelper.LogDebug(_jsonHelper.Serialize(persons), className, methodName);
 
             person = _unitWork.PersonRepository.GetById(30000);
-            LogHelper.WriteLog(LogLevelEnum.DEBUG, methodName, JsonHelper.Serialize(person));
+            _loggerHelper.LogDebug(_jsonHelper.Serialize(person), className, methodName);
 
             person = _unitWork.PersonRepository.GetLast();
-            LogHelper.WriteLog(LogLevelEnum.DEBUG, methodName, JsonHelper.Serialize(person));
+            _loggerHelper.LogDebug(_jsonHelper.Serialize(person), className, methodName);
 
             person = _unitWork.PersonRepository.GetFirst();
-            LogHelper.WriteLog(LogLevelEnum.DEBUG, methodName, JsonHelper.Serialize(person));
+            _loggerHelper.LogDebug(_jsonHelper.Serialize(person), className, methodName);
         }
 
         public void TestByPersonWithUnitWork()

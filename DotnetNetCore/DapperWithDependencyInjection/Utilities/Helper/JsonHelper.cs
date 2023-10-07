@@ -1,10 +1,12 @@
 ﻿using System.Text.Json;
+using Utilities.Helper.IHelper;
+
 
 namespace Utilities.Helper
 {
-    public class JsonHelper
+    public class JsonHelper : IJsonHelper
     {
-        private static readonly JsonSerializerOptions options = new JsonSerializerOptions
+        private readonly JsonSerializerOptions options = new JsonSerializerOptions
         {
             WriteIndented = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase, // Convert to camelCase
@@ -12,12 +14,12 @@ namespace Utilities.Helper
             Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
         };
 
-        public static string Serialize(object obj)
+        public string Serialize(object obj)
         {
             return JsonSerializer.Serialize(obj, options);
         }
 
-        public static T Deserialize<T>(string json)
+        public T Deserialize<T>(string json)
         {
             return JsonSerializer.Deserialize<T>(json);
         }

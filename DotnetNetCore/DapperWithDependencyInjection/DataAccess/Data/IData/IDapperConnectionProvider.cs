@@ -10,5 +10,7 @@ namespace DataAccess.Data.IData
     public interface IDapperConnectionProvider
     {
         public IDbConnection Connect();
+        public void Dispose();
+        public void Dispose(bool disposing);
     }
 }
