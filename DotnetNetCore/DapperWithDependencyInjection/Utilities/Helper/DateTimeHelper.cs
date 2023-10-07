@@ -1,12 +1,61 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Utilities.Helper.IHelper;
+
 
 namespace Utilities.Helper
 {
-    public class DateTimeHelper
+    public class DateTimeHelper : IDateTimeHelper
     {
-        public static T CompareDateTime<T>(DateTime jobStartTime, DateTime jobLogTime)
+        public string GetNowDateFormat(string format = "yyyy-MM-dd HH:mm:ss")
+        {
+            return DateTime.Now.Date.ToString(format);
+        }
+
+        public string GetCurrentDateTimeString(string format = "yyyy-MM-dd HH:mm:ss")
+        {
+            return DateTime.Now.ToString(format);
+        }
+
+        public string GetNowSpecificDateTimeFormat(DateTime dateTime, string format = "yyyy-MM-dd HH:mm:ss")
+        {
+            return dateTime.ToString(format);
+        }
+
+        public DateTime GetDefaultDateTime()
+        {
+            return new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+        }
+
+        public bool IsAnyNotNullInDateTimeList(List<DateTime?> dateTimeList)
+        {
+            return dateTimeList.Any(dt => dt != null);
+        }
+
+        public bool IsAnyHasNullInDateTimeList(List<DateTime?> dateTimeList)
+        {
+            return dateTimeList.Any(dt => dt == null);
+        }
+
+        public bool IsAllNotHaveNullInDateTimeList(List<DateTime?> dateTimeList)
+        {
+            return dateTimeList.All(dt => dt != null);
+        }
+
+        public bool IsAllHaveNullInDateTimeList(List<DateTime?> dateTimeList)
+        {
+            return dateTimeList.All(dt => dt == null);
+        }
+
+        public bool IsDateEqual(DateTime dt1, DateTime dt2)
+        {
+            return dt1.Date == dt2.Date;
+        }
+
+        public bool IsDateTimeEqual(DateTime dt1, DateTime dt2)
+        {
+            return dt1 == dt2;
+        }
+
+        public T CompareDateTime<T>(DateTime jobStartTime, DateTime jobLogTime)
         {
             int compareResult = DateTime.Compare(jobStartTime, jobLogTime);
 
@@ -23,34 +72,5 @@ namespace Utilities.Helper
                 throw new Exception("Type is not support");
             }
         }
-
-        //public static readonly Func<DateTime, DateTime, bool> CompareDateTime = (jobStartTime, jobLogTime) => DateTime.Compare(jobStartTime, jobLogTime) == 0;
-
-        public static readonly Func<string, string> GetNowDateFormat = (format) => DateTime.Now.Date.ToString(format);
-
-        public static readonly Func<string, string> GetNowDateTimeFormat = (format) => DateTime.Now.ToString(format);
-
-        public static readonly Func<DateTime> GetDefaultDateTime = () => new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-
-        public static string GetFormatDateTime(DateTime dt, string format = "yyyy-MM-dd HH:mm:ss")
-        {
-            return dt.ToString(format);
-        }
-
-        public static readonly Func<List<DateTime?>, bool> CheckDateTimeListAnyNotNull = (dateTimeList) => dateTimeList.Any(dt => dt != null);
-
-        public static readonly Func<List<DateTime?>, bool> CheckDateTimeListAnyHasNull = (dateTimeList) => dateTimeList.Any(dt => dt == null);
-
-        public static readonly Func<List<DateTime?>, bool> CheckDateTimeListAllNotHaveNull = (dateTimeList) => dateTimeList.All (dt => dt != null);
-        
-        public static readonly Func<List<DateTime?>, bool> CheckDateTimeListAllHaveNull = (dateTimeList) => dateTimeList.All (dt => dt == null);
-    
-        //public static Func<DateTime, DateTime, bool> CheckDateEqual = (dt1, dt2) => dt1.Date == dt2.Date;
-
-        //public static Func<DateTime, string, bool> CheckDateEqual = (dt1, dt2_str) => DateTime.TryParse(dt2_str, out DateTime dt2) && dt1.Date == dt2.Date;
-
-        public static readonly Func<DateTime, DateTime, bool> CheckDateEqual = (dt1, dt2) => dt1.Date == dt2.Date;
-
-        public static readonly Func<DateTime, DateTime, bool> CheckDateTimeEqual = (dt1, dt2) => dt1 == dt2;
     }
 }

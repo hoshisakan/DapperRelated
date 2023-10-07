@@ -1,11 +1,11 @@
 ﻿using Utilities.Helper;
+using Utilities.Helper.IHelper;
 using DapperWithDependencyInjection.Extensions;
 using DapperWithDependencyInjection.Test.ITest;
+using Models.DAO.TestDatabase;
 
-using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
-using Utilities.Enums;
 
 
 namespace DapperWithDependencyInjection
@@ -14,48 +14,81 @@ namespace DapperWithDependencyInjection
     {
         static void Main(string[] args)
         {
+            /// Build service collection
+            ServiceCollection services = new ServiceCollection();
+
+            services.AddSingleton<IJsonConfigurationHelper, JsonConfigurationHelper>();
+            IJsonConfigurationHelper _jsonConfigurationHelper = services.BuildServiceProvider().GetRequiredService<IJsonConfigurationHelper>();
+
+            ConfigurationBuilder? configuraion = _jsonConfigurationHelper.BuildJsonConfiguration("appsettings.json");
+            //services.AddApplicationServices(new ConfigurationBuilder().AddJsonFile("appsettings.json").Build());
+            services.AddApplicationServices(configuraion.Build());
+            ServiceProvider serviceProvider = services.BuildServiceProvider();
+
+            IServiceScope scope = serviceProvider.CreateScope();
+
+            IJsonHelper? _jsonHelper = scope.ServiceProvider.GetRequiredService<IJsonHelper>();
+            IDateTimeHelper? _dateTimeHelper = scope.ServiceProvider.GetRequiredService<IDateTimeHelper>();
+            IFileHelper? _fileHelper = scope.ServiceProvider.GetRequiredService<IFileHelper>();
+            ILoggerHelper? _loggerHelper = scope.ServiceProvider.GetRequiredService<ILoggerHelper>();
+            IDapperTest? _dapperTest = scope.ServiceProvider.GetRequiredService<IDapperTest>();
+            ISystemHelper? _systemHelper = scope.ServiceProvider.GetRequiredService<ISystemHelper>();
+            //IStopwatchHelper? _stopwatchHelper = scope.ServiceProvider.GetRequiredService<IStopwatchHelper>();
+
             try
             {
-                /// Build service collection
-                ServiceCollection services = new ServiceCollection();
+                string connectionString = _jsonConfigurationHelper.GetConnectionString("SelfConnection");
+                Console.WriteLine(connectionString);
 
-                /// Use dapper
-                ConfigurationBuilder? configuraion = JsonConfigurationHelper.BuildJsonConfiguration("appsettings.json");
+                TestCard testCard = new TestCard();
+                testCard.Id = 1;
+                testCard.Name = "TestCard";
+                testCard.Description = "TestCardDescription";
+                testCard.CreatedTime = DateTime.Now;
+                testCard.Defense = 1;
+                testCard.Attack = 1;
+                testCard.HealthPoint = 1;
 
-                /// Add configuration to service collection
-                services.AddSingleton<IConfiguration>(configuraion.Build());
+                string json = _jsonHelper.Serialize(testCard);
 
-                /// Get instance of IConfiguration interface from service provider
-                IConfiguration configuration = services.BuildServiceProvider().GetService<IConfiguration>() ?? throw new Exception("IConfiguration interace is null.");
+                Console.WriteLine(json);
 
-                /// Add application services to service collection
-                services.AddApplicationServices(configuration);
+                string currentDateTime = _dateTimeHelper.GetCurrentDateTimeString();
 
-                /// Get instance of IDapperTest interface from service provider
-                /// Method 1: Get instance of DapperTest class from service provider through IDapperTest interface
-                IDapperTest? dapperTest = services.BuildServiceProvider().GetService<IDapperTest>() ?? throw new Exception("IDapperTest interace is null.");
-                /// Method 2: New an instance of DapperTest class and pass IUnitWork to constructor
-                //IDapperTest? dapperTest = new DapperTest(services.BuildServiceProvider().GetService<IUnitWork>());
+                Console.WriteLine(currentDateTime);
 
-                Stopwatch s = new Stopwatch();
-                /// Execute 1000 times for each method
-                //s.Timer(() => dapperTest.TestByCardWithUnitWork(), 1000);
-                //s.Timer(() => dapperTest.TestSqlRaw());
-                //s.Timer(() => dapperTest.TestByCardWithUnitWork());
-                s.Timer(() => dapperTest.TestIsTableExists());
-                s.Timer(() => dapperTest.TestTakeRelatedMethods());
-                s.Timer(() => dapperTest.TestSkipRelatedMethods());
-                s.Timer(() => dapperTest.TestTakeAndSkipRelatedMethods());
-                s.Timer(() => dapperTest.TestWriteMessageToLogFile());
+                //_fileHelper.ReadFile("appsettings.json");
+
+                _loggerHelper.LogDebug("Connection string is: " + connectionString, nameof(Program), nameof(Main));
+
+                //IConfigurationSection configurationSection = 
+
+                //Stopwatch s = new Stopwatch();
+
+                int methodExecutionTimes = _jsonConfigurationHelper.GetAppSettingInt("MethodExecutionTimes", 1);
+
+                //_dapperTest.TestByCardWithUnitWork();
+                _dapperTest.TestByPersonWithUnitWork();
+
+                /// First get connection string and method execution times from appsettings.json
+                /// Then use them to execute methods in DapperTest class
+                //s.Timer(() => _dapperTest.TestByCardWithUnitWork(), methodExecutionTimes);
+                //s.Timer(() => _dapperTest.TestSqlRaw(), methodExecutionTimes);
+                //s.Timer(() => _dapperTest.TestByCardWithUnitWork(), methodExecutionTimes);
+                //_stopwatchHelper.Timer(() => _dapperTest.TestIsTableExists(), methodExecutionTimes);
+                //_stopwatchHelper.Timer(() => _dapperTest.TestTakeRelatedMethods(), methodExecutionTimes);
+                //s.Timer(() => _dapperTest.TestSkipRelatedMethods(), methodExecutionTimes);
+                //s.Timer(() => _dapperTest.TestTakeAndSkipRelatedMethods(), methodExecutionTimes);
+                //s.Timer(() => _dapperTest.TestWriteMessageToLogFile());
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLog(LogLevelEnum.ERROR, ex.ToString());
+                _loggerHelper.LogError(ex.Message, ex);
             }
             finally
             {
                 //Console.ReadLine();
-                SystemHelper.CloseProgram(int.Parse(JsonConfigurationHelper.GetAppSettingString("SleepTime")));
+                _systemHelper.CloseProgram(_jsonConfigurationHelper.GetAppSettingInt("SleepTime", 5));
             }
         }
     }

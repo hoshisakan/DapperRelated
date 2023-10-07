@@ -1,27 +1,20 @@
 ﻿using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+using Utilities.Helper.IHelper;
+
 
 namespace Utilities.Helper
 {
-    public class JsonConfigurationHelper
+    public class JsonConfigurationHelper : IJsonConfigurationHelper
     {
-        public JsonConfigurationHelper()
-        {
-
-        }
-
-        public static ConfigurationBuilder BuildJsonConfiguration(string path)
+        public ConfigurationBuilder BuildJsonConfiguration(string path)
         {
             ConfigurationBuilder configurationBuilder = new();
             configurationBuilder.AddJsonFile(path, optional: true, reloadOnChange: true);
             return configurationBuilder;
         }
 
-        private static IConfigurationSection LoadConfigurationFile(string actionName, string filename = "")
+        private IConfigurationSection LoadConfigurationFile(string actionName, string filename = "")
         {
             if (string.IsNullOrEmpty(filename))
             {
@@ -36,7 +29,7 @@ namespace Utilities.Helper
             return configurationSection;
         }
 
-        public static string GetConnectionString(string keyName)
+        public string GetConnectionString(string keyName)
         {
             IConfigurationSection configurationSection = LoadConfigurationFile("ConnectionStrings");
 
@@ -45,16 +38,25 @@ namespace Utilities.Helper
             return connectionString;
         }
 
-        public static string GetAppSettingString(string keyName)
+        public string GetAppSettingString(string keyName)
         {
             IConfigurationSection configurationSection = LoadConfigurationFile("AppSettings");
 
-            string connectionString = configurationSection[keyName] ?? string.Empty;
+            string appSettingValue = configurationSection[keyName] ?? string.Empty;
 
-            return connectionString;
+            return appSettingValue;
         }
 
-        public static string GetLogPath(string keyName)
+        public int GetAppSettingInt(string keyName, int defaultValue = 0)
+        {
+            if (int.TryParse(GetAppSettingString(keyName), out int result))
+            {
+                return result;
+            }
+            return defaultValue;
+        }
+
+        public string GetLogPath(string keyName)
         {
             IConfigurationSection configurationSection = LoadConfigurationFile("Logging:LogPath");
 

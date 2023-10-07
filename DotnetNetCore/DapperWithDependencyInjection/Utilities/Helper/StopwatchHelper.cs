@@ -1,11 +1,23 @@
 ﻿using System.Diagnostics;
+using Utilities.Helper.IHelper;
+
 
 namespace Utilities.Helper
 {
-    public static class StopwatchHelper
+    public class StopwatchHelper : IStopwatchHelper
     {
-        public static void Timer(this Stopwatch sw, Action action)
+        private readonly string className = nameof(StopwatchHelper);
+        private readonly Lazy<ILoggerHelper> _loggerHelper;
+
+        public StopwatchHelper(Lazy<ILoggerHelper> loggerHelper)
         {
+            this._loggerHelper = loggerHelper;
+        }
+
+        public void Timer(Stopwatch sw, Action action)
+        {
+            string methodName = nameof(Timer);
+
             if (action is null)
             {
                 throw new ArgumentNullException(nameof(action));
@@ -15,16 +27,21 @@ namespace Utilities.Helper
                 sw.Start();
                 action();
                 sw.Stop();
-                //Console.WriteLine($"Elapsed time: {stopwatch.ElapsedMilliseconds} ms");
+
+                //LogHelper.WriteLog(LogLevelEnum.DEBUG, className, methodName, $"Elapsed time: {sw.ElapsedMilliseconds} ms");
+
                 TimeSpan ts = sw.Elapsed;
                 string elapsedTime = string.Format("{0:00}:{1:00}:{2:00}.{3:00}",
                            ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10);
-                Console.WriteLine($"Run time: {elapsedTime}");
+
+                _loggerHelper.Value.LogDebug($"Run time: {elapsedTime}", className, methodName);
             }
         }
 
-        public static void Timer(this Stopwatch sw, Action action, int iterations)
+        public void Timer(Stopwatch sw, Action action, int iterations)
         {
+            string methodName = nameof(Timer);
+
             if (action is null)
             {
                 throw new ArgumentNullException(nameof(action));
@@ -39,12 +56,13 @@ namespace Utilities.Helper
                 }
                 sw.Stop();
 
-                //Console.WriteLine($"Elapsed time: {sw.ElapsedMilliseconds} ms");
+                //LogHelper.WriteLog(LogLevelEnum.DEBUG, className, methodName, $"Elapsed time: {sw.ElapsedMilliseconds} ms");
 
                 TimeSpan ts = sw.Elapsed;
                 string elapsedTime = string.Format("{0:00}:{1:00}:{2:00}.{3:00}",
                            ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10);
-                Console.WriteLine($"Run time: {elapsedTime}");
+
+                _loggerHelper.Value.LogDebug($"Run time: {elapsedTime}", className, methodName);
             }
         }
     }
