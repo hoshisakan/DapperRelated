@@ -5,7 +5,22 @@ namespace Utilities.Helper
 {
     public class DateTimeHelper : IDateTimeHelper
     {
-        public string GetNowDateFormat(string format = "yyyy-MM-dd HH:mm:ss")
+        public DateTime GetDefaultDateTime()
+        {
+            return new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+        }
+
+        public DateTime GetCurrentDateTime()
+        {
+            return DateTime.Now;
+        }
+
+        public DateTime GetCurrentDate()
+        {
+            return DateTime.Now.Date;
+        }
+
+        public string GetCurrentDateString(string format = "yyyy-MM-dd HH:mm:ss")
         {
             return DateTime.Now.Date.ToString(format);
         }
@@ -15,14 +30,9 @@ namespace Utilities.Helper
             return DateTime.Now.ToString(format);
         }
 
-        public string GetNowSpecificDateTimeFormat(DateTime dateTime, string format = "yyyy-MM-dd HH:mm:ss")
+        public string GetSpecificDateTimeString(DateTime dateTime, string format = "yyyy-MM-dd HH:mm:ss")
         {
             return dateTime.ToString(format);
-        }
-
-        public DateTime GetDefaultDateTime()
-        {
-            return new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
         }
 
         public bool IsAnyNotNullInDateTimeList(List<DateTime?> dateTimeList)

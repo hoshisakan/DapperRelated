@@ -1,10 +1,8 @@
 ﻿using Models.DataModel.ExceptionRelated;
+using Models.DTO;
+using System.Text;
 using Utilities.Enums;
 using Utilities.Helper.IHelper;
-
-using System.Text;
-using Models.DTO;
-using System.Reflection;
 
 namespace Utilities.Helper
 {
@@ -51,7 +49,7 @@ namespace Utilities.Helper
             this.LOG_FILE_DATE_FORMAT = "yyyyMMdd";
             this.LOG_FILE_CONTENT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.fff";
             this.LOG_DIRNAME = Path.Combine(LOG_PATH, _systemHelper.Value.GetApplicationName());
-            this.LOG_FILENAME = $"{_dateTimeHelper.GetNowDateFormat(LOG_FILE_DATE_FORMAT)}.log";
+            this.LOG_FILENAME = $"{_dateTimeHelper.GetCurrentDateTimeString(LOG_FILE_DATE_FORMAT)}.log";
             this.LOG_FILE_CONTENT_DATE = _dateTimeHelper.GetCurrentDateTimeString(LOG_FILE_CONTENT_DATE_FORMAT);
             this.LOG_LEVEL = new Dictionary<LogLevelEnum, string>
             {
@@ -250,7 +248,7 @@ namespace Utilities.Helper
 
                 appendText = $"{LOG_FILE_CONTENT_DATE} [{loggerDto.LogLevel}] [ClassName] [MethodName] [Exception] {loggerDto.Message}{Environment.NewLine}";
 
-                if (loggerDto.Exception == null || string.IsNullOrEmpty(loggerDto.ClassName) 
+                if (loggerDto.Exception == null || string.IsNullOrEmpty(loggerDto.ClassName)
                     || string.IsNullOrEmpty(loggerDto.MethodName))
                 {
                     if (loggerDto.Exception == null)
@@ -268,7 +266,7 @@ namespace Utilities.Helper
                         appendText = appendText.Replace("[MethodName] ", "");
                     }
                 }
-                else 
+                else
                 {
                     appendText = $"{LOG_FILE_CONTENT_DATE} [{loggerDto.LogLevel}] [{loggerDto.ClassName}] [{loggerDto.MethodName}] [{loggerDto.Exception}] {loggerDto.Message}{Environment.NewLine}";
                 }

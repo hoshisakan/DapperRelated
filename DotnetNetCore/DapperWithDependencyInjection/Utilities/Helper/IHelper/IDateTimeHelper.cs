@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Utilities.Helper.IHelper
+﻿namespace Utilities.Helper.IHelper
 {
     public interface IDateTimeHelper
     {
-        public string GetNowDateFormat(string format);
-        public string GetCurrentDateTimeString(string format = "yyyy-MM-dd HH:mm:ss");
-        public string GetNowSpecificDateTimeFormat(DateTime dateTime, string format = "yyyy-MM-dd HH:mm:ss");
         public DateTime GetDefaultDateTime();
+        public DateTime GetCurrentDate();
+        public DateTime GetCurrentDateTime();
+        public string GetCurrentDateString(string format = "yyyy-MM-dd HH:mm:ss");
+        public string GetCurrentDateTimeString(string format = "yyyy-MM-dd HH:mm:ss");
+        public string GetSpecificDateTimeString(DateTime dateTime, string format = "yyyy-MM-dd HH:mm:ss");
         public bool IsAnyNotNullInDateTimeList(List<DateTime?> dateTimeList);
         public bool IsAnyHasNullInDateTimeList(List<DateTime?> dateTimeList);
         public bool IsAllNotHaveNullInDateTimeList(List<DateTime?> dateTimeList);
