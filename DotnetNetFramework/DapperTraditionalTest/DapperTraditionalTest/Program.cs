@@ -1,5 +1,9 @@
-﻿using Utilities.Helper;
-using DapperTraditionalTest.Test;
+﻿using DapperTraditionalTest.Extensions;
+using DapperTraditionalTest.Test.ITest;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Utilities.Helper;
+using Utilities.Helper.IHelper;
 
 namespace DataAccess
 {
@@ -7,24 +11,57 @@ namespace DataAccess
     {
         static void Main(string[] args)
         {
-            string connectionString;
+            // Build service collection
+            ServiceCollection services = new ServiceCollection();
+
+            #region Register services
+            /// Add application services, which are defined in Extensions/ApplicationServiceExtensions.cs
+            services.AddSingleton<IJsonConfigurationHelper, JsonConfigurationHelper>();
+
+            /// Get IJsonConfigurationHelper from service provider
+            IJsonConfigurationHelper _jsonConfigurationHelper = services.BuildServiceProvider().GetRequiredService<IJsonConfigurationHelper>();
+
+            /// Create configuration builder
+            ConfigurationBuilder? configuraion = _jsonConfigurationHelper.BuildJsonConfiguration("appsettings.json");
+
+            /// Add application services, which are defined in Extensions/ApplicationServiceExtensions.cs
+            services.AddApplicationServices(configuraion.Build());
+            #endregion Register services
+
+            #region Build service provider
+            /// Build service provider
+            ServiceProvider serviceProvider = services.BuildServiceProvider();
+
+            /// Create service scope
+            IServiceScope scope = serviceProvider.CreateScope();
+
+            /// Use service scope to get service provider
+            IServiceProvider service = scope.ServiceProvider;
+            #endregion Build service provider
+
+            #region Get services from service scope
+            /// Get services from service scope
+            ILoggerHelper? _loggerHelper = service.GetRequiredService<ILoggerHelper>();
+            IQueryTest? _queryTest = service.GetRequiredService<IQueryTest>();
+            ISystemHelper? _systemHelper = service.GetRequiredService<ISystemHelper>();
+            //IStopwatchHelper? _stopwatchHelper = scope.ServiceProvider.GetRequiredService<IStopwatchHelper>();
+            #endregion Get services from service scope
 
             try
             {
-                connectionString = ConfigurationHelper.GetConnectionString("DefaultConnection") ?? string.Empty;
-
-                Console.WriteLine(connectionString);
-
-                QueryTest queryTest = new QueryTest(connectionString);
-                //queryTest.TestKiosk_Parameter();
-                //queryTest.TestFileTable();
-                //queryTest.TestAPLog_Parameter();
-                queryTest.IsTableExists();
+                //_queryTest.TestKiosk_Parameter();
+                //_queryTest.TestFileTable();
+                //_queryTest.TestAPLog_Parameter();
+                _queryTest.IsTableExists();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Message: {ex.Message}\nStackTrace: {ex.StackTrace}");
-                Environment.Exit(0);
+                _loggerHelper.LogError(ex.Message, ex);
+            }
+            finally
+            {
+                //Console.ReadLine();
+                _systemHelper.CloseProgram(_jsonConfigurationHelper.GetAppSettingInt("SleepTime", 5));
             }
         }
     }

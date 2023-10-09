@@ -247,7 +247,7 @@ namespace Utilities.Helper
                 appendText = $"{LOG_FILE_CONTENT_DATE} [{loggerDto.LogLevel}] [ClassName] [MethodName] [Exception] {loggerDto.Message}{Environment.NewLine}";
 
                 if ((loggerDto.LogLevel == "ERROR" && loggerDto.Exception == null) || string.IsNullOrEmpty(loggerDto.ClassName)
-                 || string.IsNullOrEmpty(loggerDto.MethodName))
+                    || string.IsNullOrEmpty(loggerDto.MethodName))
                 {
                     if (loggerDto.Exception == null)
                     {
@@ -258,11 +258,11 @@ namespace Utilities.Helper
                     {
                         appendText = appendText.Replace("[ClassName] ", "");
                     }
-
                     if (string.IsNullOrEmpty(loggerDto.MethodName))
                     {
                         appendText = appendText.Replace("[MethodName] ", "");
                     }
+
                 }
                 else
                 {

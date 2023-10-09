@@ -1,24 +1,16 @@
-﻿using DataAccess.Repositories.IRepositories;
-using DataAccess.Repositories;
+﻿using Dapper;
+using DataAccess.Data.IData;
+using DataAccess.Repositories.IRepositories;
 using Models.DAO.NEC.Test;
-using Utilities.Helper;
-
-using Dapper;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Data.SqlClient;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-
+using Utilities.Helper.IHelper;
 
 namespace DataAccess.Repositories
 {
     public class Kiosk_Parameter_Repository : Repository<Kiosk_Parameter>, IKiosk_Parameter_Repository
     {
-        private readonly SqlConnection cnn;
+        private readonly IDapperConnectionProvider _dapperProvider;
+        private readonly ILoggerHelper _loggerHelper;
         private readonly Dictionary<string, string> Description = new Dictionary<string, string>()
         {
             {"SOAPTestKeyReadFile1", "測試金鑰ReadFile1"},
@@ -26,9 +18,10 @@ namespace DataAccess.Repositories
             {"SOAPTestKeyWriteFile2", "測試金鑰WriteFile2"},
         };
 
-        public Kiosk_Parameter_Repository(SqlConnection cnn) : base(cnn)
+        public Kiosk_Parameter_Repository(IDapperConnectionProvider dapperProvider, ILoggerHelper loggerHelper) : base(dapperProvider, loggerHelper)
         {
-            this.cnn = cnn;
+            _dapperProvider = dapperProvider;
+            _loggerHelper = loggerHelper;
         }
 
         public void DeleteKiosk_ParameterValue(string name)
@@ -85,13 +78,13 @@ namespace DataAccess.Repositories
             {
                 queryString = "SELECT [Name],[Value] FROM [dbo].[Kiosk_Parameter] WHERE [Name] IN @keys";
 
-                LogHelper.WriteLog($"queryString: {queryString}");
+                _loggerHelper.LogDebug($"queryString: {queryString}", nameof(Kiosk_Parameter_Repository), nameof(GetKiosk_ParameterByKeys));
 
-                result = cnn.Query<Kiosk_Parameter>(queryString, new { keys = keys }).ToList();
+                result = _dapperProvider.Connect().Query<Kiosk_Parameter>(queryString, new { keys }).ToList();
             }
             catch (Exception ex)
             {
-                LogHelper.WriteLog($"Message: {ex.Message}\nStackTrace: {ex.StackTrace}");
+                _loggerHelper.LogError(ex.ToString(), ex, nameof(Kiosk_Parameter_Repository), nameof(GetKiosk_ParameterByKeys));
             }
             return result;
         }
@@ -130,7 +123,7 @@ namespace DataAccess.Repositories
                 parameters.Add("@Status", true);
                 parameters.Add("@Description", Description[name]);
                 parameters.Add("@Group", "TsmcAPI");
-                parameters.Add("@SN", this.GetLast().SN + 1);
+                parameters.Add("@SN", GetLast().SN + 1);
                 queryString = " IF NOT EXISTS (SELECT * FROM [dbo].[Kiosk_Parameter] WHERE [Name] = @Name) INSERT INTO [dbo].[Kiosk_Parameter] (SN, Name, Value, [Group], Description, Status) VALUES (@SN, @Name, @Value, @Group, @Description, @Status) ELSE UPDATE [dbo].[Kiosk_Parameter] SET [Value] = @Value WHERE [Name] = @Name ";
             }
             else
@@ -144,8 +137,8 @@ namespace DataAccess.Repositories
             }
 
             Console.WriteLine($"query: {queryString}");
-            
-            result = cnn.Execute(queryString, parameters);
+
+            result = _dapperProvider.Connect().Execute(queryString, parameters);
 
             Console.WriteLine($"SetOrUpdateKiosk_ParameterValue: {result}");
         }

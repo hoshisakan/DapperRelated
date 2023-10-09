@@ -1,8 +1,6 @@
 ﻿using DataAccess.Data.IData;
 using DataAccess.Repositories.IRepositories;
 using DataAccess.Repositories.IRepository;
-using Utilities.Helper;
-using Utilities.Enums;
 using Utilities.Helper.IHelper;
 
 namespace DataAccess.Repositories
@@ -10,9 +8,9 @@ namespace DataAccess.Repositories
     public class UnitWork : IUnitWork
     {
         private readonly IDapperConnectionProvider _dapperProvider;
+        private ILoggerHelper _loggerHelper;
         public ITestCardRepository TestCardRepository { get; private set; }
         public IPersonRepository PersonRepository { get; private set; }
-        public ILoggerHelper _loggerHelper { get; private set; }
 
 
         public UnitWork(IDapperConnectionProvider dapperProvider, ILoggerHelper loggerHelper)
@@ -25,7 +23,7 @@ namespace DataAccess.Repositories
 
         //~UnitWork()
         //{
-        //    LogHelper.WriteLog(LogLevelEnum.INFO, nameof(UnitWork), nameof(UnitWork), "UnitWork is disposed.");
+        //    _loggerHelper.LogDebug("UnitWork is disposed.", nameof(UnitWork), "~UnitWork");
         //    _dapperProvider.Dispose(true);
         //}
 

@@ -1,13 +1,11 @@
-﻿using DataAccess.Data.IData;
+﻿using Dapper;
+using DataAccess.Data.IData;
 using DataAccess.Repositories.IRepository;
-using Utilities.Enums;
-using Utilities.Helper;
-using static Dapper.SqlMapper;
-
-using Dapper;
 using System.Linq.Expressions;
 using System.Reflection;
 using Utilities.Helper.IHelper;
+using static Dapper.SqlMapper;
+
 
 namespace DataAccess.Repositories
 {

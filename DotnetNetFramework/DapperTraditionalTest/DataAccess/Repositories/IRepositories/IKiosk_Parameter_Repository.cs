@@ -1,11 +1,6 @@
-﻿using Models.DAO.NEC.Test;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using DataAccess.Repositories.IRepository;
+using Models.DAO.NEC.Test;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DataAccess.Repositories.IRepositories
 {

@@ -1,34 +1,33 @@
-﻿using Utilities.Helper;
-using DataAccess.Data;
-using DataAccess.Data.IData;
-using DataAccess.Repositories;
+﻿using DapperTraditionalTest.Test.ITest;
 using DataAccess.Repositories.IRepositories;
 using Models.DAO.NEC.Test;
-
-using System.Data.SqlClient;
-using Models.DataModel.APLog;
+using Models.DataModel.NEC.APLog;
+using Utilities.Helper.IHelper;
 
 namespace DapperTraditionalTest.Test
 {
-    public class QueryTest
+    public class QueryTest : IQueryTest
     {
-        private readonly SqlConnection cnn;
-        private readonly IDbContextInitialize dbContextInitialize;
-        private readonly IUnitWork unitWork;
+        private readonly IUnitWork _unitWork;
+        private readonly IJsonHelper _jsonHelper;
+        private readonly ILoggerHelper _loggerHelper;
 
-
-        public QueryTest(string connectionString)
+        public QueryTest(IUnitWork unitWork, IJsonHelper jsonHelper, ILoggerHelper loggerHelper)
         {
-            dbContextInitialize = new DbContextInitialize(connectionString);
-            cnn = dbContextInitialize.Initialize();
-            unitWork = new UnitWork(this.cnn);
+            _unitWork = unitWork;
+            _jsonHelper = jsonHelper;
+            _loggerHelper = loggerHelper;
         }
 
         public void IsTableExists()
         {
-            unitWork.APLog_Repository.IsTableExists();
-            unitWork.FileTable_Repository.IsTableExists();
-            unitWork.Kiosk_TblMember_Repository.IsTableExists();
+            Dictionary<string, bool> tempAllTableCheckResult = new Dictionary<string, bool>()
+            {
+                {"FileTable", _unitWork.FileTable_Repository.IsTableExists()},
+                {"APLog",_unitWork.APLog_Repository.IsTableExists()},
+                {"Kiosk_tblMember",  _unitWork.Kiosk_TblMember_Repository.IsTableExists()},
+            };
+            _loggerHelper.LogDebug(_jsonHelper.Serialize(tempAllTableCheckResult), nameof(QueryTest), nameof(IsTableExists));
         }
 
         public void TestAPLog_Parameter()
@@ -51,8 +50,8 @@ namespace DapperTraditionalTest.Test
 
             foreach (CheckDetectionResultExists item in searchList)
             {
-                isExists = unitWork.APLog_Repository.IsExistByNameAndLogTime(item.JobName, item.LogDateTime);
-                Console.WriteLine($"{item.JobName}, {item.LogDateTime} => Is exists? {isExists}");
+                isExists = _unitWork.APLog_Repository.IsExistByNameAndLogTime(item.JobName, item.LogDateTime);
+                _loggerHelper.LogDebug($"{item.JobName}, {item.LogDateTime} => Is exists? {isExists}", nameof(QueryTest), nameof(TestAPLog_Parameter));
             }
         }
 
@@ -60,13 +59,13 @@ namespace DapperTraditionalTest.Test
         {
             List<Kiosk_Parameter> dataList;
 
-            dataList = unitWork.Kiosk_Parameter_Repository.GetAll();
+            dataList = _unitWork.Kiosk_Parameter_Repository.GetAll();
 
-            Console.WriteLine(JsonHelper.Serialize(dataList));
+            _loggerHelper.LogDebug(_jsonHelper.Serialize(dataList), nameof(QueryTest), nameof(TestKiosk_Parameter));
 
-            this.unitWork.Kiosk_Parameter_Repository.SetOrUpdateKiosk_ParameterValue("SOAPTestKeyReadFile1", "00000000000000000000000000000001", true);
+            this._unitWork.Kiosk_Parameter_Repository.SetOrUpdateKiosk_ParameterValue("SOAPTestKeyReadFile1", "00000000000000000000000000000001", true);
 
-            Console.WriteLine(JsonHelper.Serialize(dataList));
+            _loggerHelper.LogDebug(_jsonHelper.Serialize(dataList), nameof(QueryTest), nameof(TestKiosk_Parameter));
         }
 
         public void TestFileTable()
@@ -84,71 +83,71 @@ namespace DapperTraditionalTest.Test
                 UpdateTime = DateTime.Now
             };
 
-            int addResult = unitWork.FileTable_Repository.Add(addData);
+            int addResult = _unitWork.FileTable_Repository.Add(addData);
 
             if (addResult != 1)
             {
-                Console.WriteLine("Add data failed");
+                _loggerHelper.LogDebug("Add data failed", nameof(QueryTest), nameof(TestFileTable));
                 return;
             }
             else
             {
-                Console.WriteLine("Add data successfully");
+                _loggerHelper.LogDebug("Add data successfully", nameof(QueryTest), nameof(TestFileTable));
             }
 
-            //oldData = unitWork.FileTable_Repository.GetFirst(addData.File2, addData.UpdateTime);
-            Console.WriteLine(addData.UpdateTime.ToString("yyyy-MM-ddThh:mm:ss.fff"));
-            oldData = unitWork.FileTable_Repository.GetFirst(addData.File2, addData.UpdateTime.ToString("yyyy-MM-ddThh:mm:ss.fff"));
-            //oldData = unitWork.FileTable_Repository.GetFirst("C125896375", "2023-09-11 22:28:11.113");
-            //oldData = unitWork.FileTable_Repository.GetFirst("C125896375", "2023-09-11T22:12:01.827");
+            //oldData = _unitWork.FileTable_Repository.GetFirst(addData.File2, addData.UpdateTime);
+            _loggerHelper.LogDebug(addData.UpdateTime.ToString("yyyy-MM-ddThh:mm:ss.fff"), nameof(QueryTest), nameof(TestFileTable));
+            oldData = _unitWork.FileTable_Repository.GetFirst(addData.File2, addData.UpdateTime.ToString("yyyy-MM-ddThh:mm:ss.fff"));
+            //oldData = _unitWork.FileTable_Repository.GetFirst("C125896375", "2023-09-11 22:28:11.113");
+            //oldData = _unitWork.FileTable_Repository.GetFirst("C125896375", "2023-09-11T22:12:01.827");
 
             if (oldData == null)
             {
-                Console.WriteLine("No data");
+                _loggerHelper.LogDebug("No data", nameof(QueryTest), nameof(TestFileTable));
                 return;
             }
             else
             {
-                Console.WriteLine("Get data successfully");
+                _loggerHelper.LogDebug("Get data successfully", nameof(QueryTest), nameof(TestFileTable));
             }
 
-            string resultData = JsonHelper.Serialize(oldData);
+            string resultData = _jsonHelper.Serialize(oldData);
 
             if (string.IsNullOrEmpty(resultData))
             {
-                Console.WriteLine("No data");
+                _loggerHelper.LogDebug("No data", nameof(QueryTest), nameof(TestFileTable));
             }
             else
             {
-                Console.WriteLine(resultData);
+                _loggerHelper.LogDebug(resultData, nameof(QueryTest), nameof(TestFileTable));
             }
 
-            Console.WriteLine(oldData.UpdateTime);
+            _loggerHelper.LogDebug(oldData.UpdateTime.ToString("yyyy-MM-ddThh:mm:ss.fff"), nameof(QueryTest), nameof(TestFileTable));
 
-            editData = unitWork.FileTable_Repository.GetFirst(oldData.File2, oldData.UpdateTime);
+            editData = _unitWork.FileTable_Repository.GetFirst(oldData.File2, oldData.UpdateTime);
 
             if (editData == null)
             {
-                Console.WriteLine("No data");
+                _loggerHelper.LogDebug("No data", nameof(QueryTest), nameof(TestFileTable));
             }
             else
             {
-                Console.WriteLine(JsonHelper.Serialize(editData));
+                _loggerHelper.LogDebug(_jsonHelper.Serialize(editData), nameof(QueryTest), nameof(TestFileTable));
                 editData.File1 = "1420119899";
                 editData.Account = "testUpdate";
-                int updateResult = unitWork.FileTable_Repository.Update(editData);
+                int updateResult = _unitWork.FileTable_Repository.Update(editData);
 
                 if (updateResult == 1)
                 {
-                    Console.WriteLine("Update successfully");
+                    _loggerHelper.LogDebug("Update successfully", nameof(QueryTest), nameof(TestFileTable));
                 }
                 else
                 {
-                    Console.WriteLine("Update failed");
+                    _loggerHelper.LogDebug("Update failed", nameof(QueryTest), nameof(TestFileTable));
                 }
             }
 
-            //bool isExist = unitWork.FileTable_Repository.IsExist("C125896999", "2023-09-11 16:34:19.327");
+            //bool isExist = _unitWork.FileTable_Repository.IsExist("C125896999", "2023-09-11 16:34:19.327");
             //Console.WriteLine(isExist);
 
             //newData.File1 = "1420582763";
@@ -157,7 +156,7 @@ namespace DapperTraditionalTest.Test
 
             //Console.WriteLine(JsonHelper.Serialize(newData));
 
-            //int addResult = unitWork.FileTable_Repository.Add(newData);
+            //int addResult = _unitWork.FileTable_Repository.Add(newData);
 
             //Console.WriteLine(addResult);
 
@@ -165,7 +164,7 @@ namespace DapperTraditionalTest.Test
             //{
             //    Console.WriteLine("Add successfully");
 
-            //    oldData = unitWork.FileTable_Repository.GetFirst(newData.File2, newData.UpdateTime);
+            //    oldData = _unitWork.FileTable_Repository.GetFirst(newData.File2, newData.UpdateTime);
 
             //    Console.WriteLine(JsonHelper.Serialize(oldData));
 
@@ -173,7 +172,7 @@ namespace DapperTraditionalTest.Test
             //    {
             //        oldData.File1 = "1420119899";
             //        oldData.Account = "testUpdate";
-            //        int updateResult = unitWork.FileTable_Repository.Update(oldData);
+            //        int updateResult = _unitWork.FileTable_Repository.Update(oldData);
 
             //        if (updateResult == 1)
             //        {
@@ -184,7 +183,7 @@ namespace DapperTraditionalTest.Test
             //            Console.WriteLine("Update failed");
             //        }
 
-            //        editData = unitWork.FileTable_Repository.GetFirst(oldData.File2, oldData.UpdateTime);
+            //        editData = _unitWork.FileTable_Repository.GetFirst(oldData.File2, oldData.UpdateTime);
 
             //        Console.WriteLine(JsonHelper.Serialize(editData));
 
@@ -192,7 +191,7 @@ namespace DapperTraditionalTest.Test
             //        //{
             //        //    Console.WriteLine("Remove successfully");
 
-            //        //    int removeResult = unitWork.FileTable_Repository.Delete(editData);
+            //        //    int removeResult = _unitWork.FileTable_Repository.Delete(editData);
 
             //        //    if (removeResult == 2)
             //        //    {

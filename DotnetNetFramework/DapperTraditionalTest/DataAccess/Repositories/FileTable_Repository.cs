@@ -1,24 +1,20 @@
 ﻿using Dapper;
+using DataAccess.Data.IData;
 using DataAccess.Repositories.IRepositories;
 using Models.DAO.NEC.Test;
-
-
-using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Utilities.Helper.IHelper;
 
 namespace DataAccess.Repositories
 {
     public class FileTable_Repository : Repository<FileTable>, IFileTable_Repository
     {
-        private readonly SqlConnection cnn;
+        private readonly IDapperConnectionProvider _dapperProvider;
+        private readonly ILoggerHelper _loggerHelper;
 
-        public FileTable_Repository(SqlConnection cnn) : base(cnn)
-        { 
-            this.cnn = cnn;
+        public FileTable_Repository(IDapperConnectionProvider dapperProvider, ILoggerHelper loggerHelper) : base(dapperProvider, loggerHelper)
+        {
+            _dapperProvider = dapperProvider;
+            _loggerHelper = loggerHelper;
         }
 
         public FileTable GetFirst(string file2, DateTime updateTime)
@@ -29,7 +25,7 @@ namespace DataAccess.Repositories
                            WHERE [File2] = @File2 
                            AND [UpdateTime] = @UpdateTime
                         ";
-            result = cnn.QueryFirstOrDefault<FileTable>(sql, new { File2 = file2, UpdateTime = updateTime });
+            result = _dapperProvider.Connect().QueryFirstOrDefault<FileTable>(sql, new { File2 = file2, UpdateTime = updateTime });
 
             return result;
         }
@@ -42,7 +38,7 @@ namespace DataAccess.Repositories
                            WHERE [File2] = @File2 
                            AND [UpdateTime] = @UpdateTime
                         ";
-            result = cnn.QueryFirstOrDefault<FileTable>(sql, new { File2 = file2, UpdateTime = updateTime });
+            result = _dapperProvider.Connect().QueryFirstOrDefault<FileTable>(sql, new { File2 = file2, UpdateTime = updateTime });
 
             return result;
         }
@@ -65,7 +61,7 @@ namespace DataAccess.Repositories
                            ,@UpdateTime)
                      ";
 
-            result = cnn.Execute(sql, entity);
+            result = _dapperProvider.Connect().Execute(sql, entity);
 
             return result;
         }
@@ -84,7 +80,7 @@ namespace DataAccess.Repositories
                             AND [UpdateTime] = @Old_UpdateTime
                          ";
 
-            result = cnn.Execute(sql, new
+            result = _dapperProvider.Connect().Execute(sql, new
             {
                 entity.File1,
                 entity.File2,
@@ -108,7 +104,7 @@ namespace DataAccess.Repositories
                             [Account] = @Account
                          ";
 
-            result = cnn.Execute(sql, entity);
+            result = _dapperProvider.Connect().Execute(sql, entity);
 
             Console.WriteLine($"Delete: {result}");
 
@@ -123,7 +119,7 @@ namespace DataAccess.Repositories
                            WHERE [File2] = @File2 
                            AND [UpdateTime] = @UpdateTime
                         ";
-            result = cnn.QueryFirstOrDefault<FileTable>(sql, new { File2 = file2, UpdateTime = updateTime }) != null;
+            result = _dapperProvider.Connect().QueryFirstOrDefault<FileTable>(sql, new { File2 = file2, UpdateTime = updateTime }) != null;
 
             return result;
         }
@@ -136,7 +132,7 @@ namespace DataAccess.Repositories
                            WHERE [File2] = @File2 
                            AND [UpdateTime] = @UpdateTime
                         ";
-            result = cnn.QueryFirstOrDefault<FileTable>(sql, new { File2 = file2, UpdateTime = updateTime }) != null;
+            result = _dapperProvider.Connect().QueryFirstOrDefault<FileTable>(sql, new { File2 = file2, UpdateTime = updateTime }) != null;
 
             return result;
         }
@@ -149,7 +145,7 @@ namespace DataAccess.Repositories
                            WHERE [File2] = @File2 
                            AND [UpdateTime] = @UpdateTime
                         ";
-            result = cnn.Execute(sql, new { File2 = file2, UpdateTime = updateTime });
+            result = _dapperProvider.Connect().Execute(sql, new { File2 = file2, UpdateTime = updateTime });
 
             return result;
         }

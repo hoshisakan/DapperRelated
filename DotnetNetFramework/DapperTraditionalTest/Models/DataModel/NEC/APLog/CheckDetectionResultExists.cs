@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Models.DataModel.APLog
+﻿namespace Models.DataModel.NEC.APLog
 {
     public class CheckDetectionResultExists
     {

@@ -1,62 +1,55 @@
-﻿using DapperTraditionalTest.Status;
-using System;
-using System.IO;
-using System.Linq;
-using Utilities.Helper;
+﻿using Utilities.Enums;
+using Utilities.Helper.IHelper;
 
-namespace DapperTraditionalTest.Helper
+namespace Utilities.Helper
 {
-    public class FileHelper
+    public class FileHelper : IFileHelper
     {
-        public FileHelper()
+        private readonly Lazy<ILoggerHelper> _loggerHelper;
+
+        public FileHelper(Lazy<ILoggerHelper> loggerHelper)
         {
+            this._loggerHelper = loggerHelper;
         }
 
-        private static bool IsFileExists(string path)
+        public bool IsFileExists(string path)
         {
-            if (string.IsNullOrEmpty(path))
-            {
-                return false;
-            }
-            return CheckFileExists(path);
+            return !string.IsNullOrEmpty(path) && File.Exists(path);
         }
 
-        private static bool IsDirExists(string path)
+        public bool IsDirExists(string path)
         {
-            if (string.IsNullOrEmpty(path))
-            {
-                return false;
-            }
-            return CheckDirExists(path);
+            return !string.IsNullOrEmpty(path) && Directory.Exists(path);
         }
 
-        private static bool IsFileExistsInDir(string dir, string filename)
+        public bool IsFileExistsInDir(string dir, string filename)
         {
             if (string.IsNullOrEmpty(dir) || string.IsNullOrEmpty(filename))
             {
                 return false;
             }
-            return CheckFileExists(Path.Combine(dir, filename));
+            return IsFileExists(path: Path.Combine(dir, filename));
         }
 
-        private static string SaveValue(string filepath, string dt, bool append)
+        public bool SaveValue(string filepath, string dt, bool append)
         {
             try
             {
-                using (StreamWriter sw = new StreamWriter(filepath, append))
-                {
-                    sw.WriteLine(dt);
-                }
-                return "success";
+                using StreamWriter sw = new StreamWriter(filepath, append);
+                sw.WriteLine(dt);
+
+                _loggerHelper.Value.LogDebug($"Write {dt} to {filepath} success", nameof(FileHelper), nameof(SaveValue));
+
+                return true;
             }
             catch (Exception ex)
             {
-                DebugHelper.ReadItemsOutputRawText(ex.ToString(), LogLevelStatus.Error, DateTime.Now.ToString("yyyyMMdd"));
-                return "fail";
+                _loggerHelper.Value.LogError(ex.ToString());
+                return false;
             }
         }
 
-        private static void ReadFile(string filePath)
+        public void ReadFile(string filePath)
         {
             try
             {
@@ -70,119 +63,13 @@ namespace DapperTraditionalTest.Helper
                     throw new FileNotFoundException();
                 }
 
-                string text = System.IO.File.ReadAllText(filePath);
-                Console.WriteLine("Contents of WriteText.txt = {0}", text);
+                string text = File.ReadAllText(filePath);
+
+                _loggerHelper.Value.LogDebug($"Contents of WriteText.txt = {text}", nameof(FileHelper), nameof(ReadFile));
             }
             catch (Exception ex)
             {
-                DebugHelper.ReadItemsOutputRawText(ex.ToString(), LogLevelStatus.Error, DateTime.Now.ToString("yyyyMMdd"));
-            }
-        }
-
-        public static readonly Func<string, bool> CheckFileExists = (filepath) => File.Exists(filepath);
-
-        public static readonly Func<string, bool> CheckDirExists = (filepath) => Directory.Exists(filepath);
-
-        private static bool CheckTextExists(string filepath, string text)
-        {
-            bool result = false;
-
-            try
-            {
-                if (!CheckFileExists(filepath))
-                {
-                    result = false;
-                }
-                else
-                {
-                    result = File.ReadAllLines(filepath).Any(f => f == text);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.WriteLog("CheckTextExists", DateTime.Now.ToString("yyyyMMdd"), ex.Message);
-            }
-            return result;
-        }
-
-        public static bool RemoveValue(string filepath, string rt)
-        {
-            bool result = false;
-            try
-            {
-                if (!CheckFileExists(filepath))
-                {
-                    result = false;
-                }
-                else
-                {
-                    string[] oldFileContent = File.ReadAllLines(filepath);
-
-                    if (!oldFileContent.Contains(rt))
-                    {
-                        result = false;
-                    }
-
-                    string tempFile = Path.GetTempFileName();
-
-                    string[] newFileContent = oldFileContent.Where(val => val != rt).ToArray();
-
-                    File.WriteAllLines(tempFile, newFileContent);
-                    File.Delete(filepath);
-                    File.Move(tempFile, filepath);
-
-                    result = true;
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugHelper.ReadItemsOutputRawText(ex.ToString(), LogLevelStatus.Error, DateTime.Now.ToString("yyyyMMdd"));
-            }
-            return result;
-        }
-
-        public static string GetValue(string filepath)
-        {
-            try
-            {
-                if (!CheckFileExists(filepath))
-                {
-                    return "fail";
-                }
-                else
-                {
-                    ReadFile(filepath);
-                    return "success";
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugHelper.ReadItemsOutputRawText(ex.ToString(), LogLevelStatus.Error, DateTime.Now.ToString("yyyyMMdd"));
-                return "fail";
-            }
-        }
-
-        public static string SetValue(string filepath, string dt)
-        {
-            try
-            {
-                if (!CheckFileExists(filepath))
-                {
-                    return SaveValue(filepath, dt, false);
-                }
-                else
-                {
-                    if (!CheckTextExists(filepath, dt))
-                    {
-                        return SaveValue(filepath, dt, true);
-                    }
-                    return "success";
-                }
-            }
-            catch (Exception ex)
-            {
-                DebugHelper.ReadItemsOutputRawText(ex.ToString(), LogLevelStatus.Error, DateTime.Now.ToString("yyyyMMdd"));
-                return "fail";
+                _loggerHelper.Value.LogError(ex.ToString());
             }
         }
     }

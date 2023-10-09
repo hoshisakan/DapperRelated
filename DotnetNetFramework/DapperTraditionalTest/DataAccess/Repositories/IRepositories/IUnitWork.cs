@@ -1,6 +1,4 @@
-﻿
-
-namespace DataAccess.Repositories.IRepositories
+﻿namespace DataAccess.Repositories.IRepositories
 {
     public interface IUnitWork
     {

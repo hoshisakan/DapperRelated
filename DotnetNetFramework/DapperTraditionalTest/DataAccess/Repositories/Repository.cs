@@ -1,577 +1,543 @@
 ﻿using Dapper;
-using DapperTraditionalTest.Helper;
-using DataAccess.Repositories.IRepositories;
-using System.Data.SqlClient;
+using DataAccess.Data.IData;
+using DataAccess.Repositories.IRepository;
 using System.Linq.Expressions;
 using System.Reflection;
-using Utilities.Helper;
+using Utilities.Helper.IHelper;
 using static Dapper.SqlMapper;
 
-namespace DataAccess.Repositories;
 
-public class Repository<T> : IRepository<T> where T : class
+namespace DataAccess.Repositories
 {
-    private readonly SqlConnection cnn;
-
-    public Repository(SqlConnection cnn)
+    public class Repository<T> : IRepository<T> where T : class
     {
-        this.cnn = cnn;
-    }
+        private readonly IDapperConnectionProvider _dapperProvider;
+        private readonly ILoggerHelper _loggerHelper;
+        private readonly string className = nameof(Repository<T>);
 
-    public string GetPrimaryKeyName()
-    {
-        PropertyInfo[]? entityProperties = typeof(T).GetProperties();
-
-        string? primaryKey = null;
-
-        /// Method 1 - Using LINQ get first field to get the primary key (assuming the first field is the primary key)
-        primaryKey = (
-            from p in entityProperties
-            select p.Name
-        ).FirstOrDefault();
-
-        /// Method 2 - Using LINQ filter includes "Id" related fields to get the primary key (assuming includes "Id" realted field is the primary key)
-        //primaryKey = (
-        //    from p in entityProperties
-        //    where p.Name.Contains("Id")
-        //    select p.Name
-        //).FirstOrDefault();
-
-        /// Not working
-        //primaryKey = (
-        //    from p in entityProperties
-        //    where p.GetCustomAttributes(typeof(KeyAttribute), true).Length > 0
-        //    select p.Name
-        //).FirstOrDefault();
-
-        /// Not working
-        //foreach (PropertyInfo property in entityProperties)
-        //{
-        //    //KeyAttribute? attribute = Attribute.GetCustomAttribute(property, typeof(KeyAttribute))
-        //    //    as KeyAttribute;
-
-        //    Attribute? attribute = property.GetCustomAttribute(typeof(KeyAttribute));
-
-        //    if (attribute != null)
-        //    {
-        //        primaryKey = property.Name;
-        //        break;
-        //    }
-        //}
-
-        //entityProperties.ToList().ForEach(p =>
-        //{
-        //    Console.WriteLine($"{typeof(KeyAttribute)}");
-        //    Console.WriteLine($"Property name: {p.Name}");
-        //    Console.WriteLine($"Property type: {p.PropertyType}");
-        //    Console.WriteLine($"Property data type: {p.GetType()}");
-        //    Console.WriteLine($"Property custom attributes: {p.GetCustomAttributes()}");
-        //    Console.WriteLine($"Property custom attributes: {p.GetCustomAttributes(typeof(KeyAttribute), true)}");
-        //    Console.WriteLine($"Property custom attributes length: {p.GetCustomAttributes(typeof(KeyAttribute), true).Length}");
-        //    Console.WriteLine($"Property custom attributes length compare result: {p.GetCustomAttributes(typeof(KeyAttribute), true).Length > 0}");
-        //    Console.WriteLine("-------------------------------------------------------------------------------");
-        //});
-
-        if (primaryKey == null)
+        public Repository(IDapperConnectionProvider dapperProvider, ILoggerHelper loggerHelper)
         {
-            throw new ArgumentNullException(nameof(primaryKey));
+            _dapperProvider = dapperProvider;
+            _loggerHelper = loggerHelper;
         }
 
-        Console.WriteLine($"Primary key name: {primaryKey}");
-
-        return primaryKey;
-    }
-
-    public bool IsTableExists()
-    {
-        //return this.cnn.Query<T>($"SELECT CASE WHEN OBJECT_ID('{typeof(T).Name}', 'U') IS NOT NULL THEN 1 ELSE 0 END").Count() > 0;
-        dynamic result = this.cnn.QueryFirst<int>($"SELECT CASE WHEN OBJECT_ID('{typeof(T).Name}', 'U') IS NOT NULL THEN 1 ELSE 0 END") > 0;
-        DebugHelper.ReadItemsOutputRawText(
-            $"Check table exists result: {result}",
-            SystemHelper.GetApplicationName(),
-            DateTimeHelper.GetNowDateFormat("yyyyMMdd")
-        );
-        return result;
-    }
-
-    public List<T> GetAll()
-    {
-        return this.cnn.Query<T>($"SELECT * FROM {typeof(T).Name}").ToList();
-    }
-
-    public T GetFirst()
-    {
-        return this.cnn.QueryFirstOrDefault<T>($"SELECT TOP 1 * FROM {typeof(T).Name}");
-    }
-
-    public T GetLast()
-    {
-        return this.cnn.QueryFirstOrDefault<T>($"SELECT TOP 1 * FROM {typeof(T).Name} ORDER BY {GetPrimaryKeyName()} DESC");
-    }
-
-    public T GetById(int id)
-    {
-        return this.cnn.QueryFirstOrDefault<T>($"SELECT * FROM {typeof(T).Name} WHERE {GetPrimaryKeyName()} = @Id", new { Id = id });
-    }
-
-    public int GetCount()
-    {
-        return this.cnn.QueryFirstOrDefault<int>($"SELECT COUNT(*) FROM {typeof(T).Name}");
-    }
-
-    public List<T> GetWhere(Expression<Func<T, bool>> predicate)
-    {
-        List<string> allQueryList = new List<string>()
+        public string GetPrimaryKeyName()
         {
-            $"SELECT * FROM {typeof(T).Name} WHERE {predicate.Compile()}",
-            $"SELECT * FROM {typeof(T).Name} WHERE {predicate.Body}",
-            $"SELECT * FROM {typeof(T).Name} WHERE {predicate.Body.ToString().Replace("AndAlso", "AND").Replace("OrElse", "OR")}",
-            $"SELECT * FROM {typeof(T).Name} WHERE {predicate.Body.ToString().Replace("AndAlso", "AND").Replace("OrElse", "OR").Replace("==", "=")}",
-            $"SELECT * FROM {typeof(T).Name} WHERE {predicate.Body.ToString().Replace("AndAlso", "AND").Replace("OrElse", "OR").Replace("==", "=").Replace("True", "1").Replace("False", "0").Replace("x.", "")}",
-            $""
-        };
+            PropertyInfo[]? entityProperties = typeof(T).GetProperties();
 
-        string query = allQueryList[5];
+            string? primaryKey = null;
 
-        foreach (string temp in allQueryList)
-        {
-            Console.WriteLine(temp);
-        }
+            /// Method 1 - Using LINQ get first field to get the primary key (assuming the first field is the primary key)
+            primaryKey = (
+                from p in entityProperties
+                select p.Name
+            ).FirstOrDefault();
 
-        //return this.cnn.Query<T>($"SELECT * FROM {typeof(T).Name}").Where(predicate.Compile()).ToList();
-        return this.cnn.Query<T>(query).ToList();
-    }
-
-    public List<T> GetTake(int take)
-    {
-        return this.cnn.Query<T>($"SELECT TOP {take} * FROM {typeof(T).Name}").ToList();
-    }
-
-    public List<T> GetTakeReverse(int take)
-    {
-        return this.cnn.Query<T>($"SELECT TOP {take} * FROM {typeof(T).Name} ORDER BY {GetPrimaryKeyName()} DESC").ToList();
-    }
-
-    /// <summary>
-    /// Add a new entity to the database and return inserted query result code (0 = success, -1 = fail)
-    /// </summary>
-    /// <param name="entity"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
-    public virtual int Add(T entity)
-    {
-        if (entity == null)
-        {
-            throw new ArgumentNullException(nameof(entity));
-        }
-        else
-        {
-            PropertyInfo[]? entityProperties = entity.GetType().GetProperties();
-
-            string primaryKey = GetPrimaryKeyName();
-
-            IEnumerable<string> allFields = (
-                from f in entityProperties
-                where !f.Name.Contains(primaryKey)
-                select f.Name
-            );
-            IEnumerable<string> allValues = (
-                from v in entityProperties
-                where !v.Name.Contains(primaryKey)
-                select "@" + v.Name
-            );
-
-            string fields = allFields.Aggregate((x, y) => x + ", " + y);
-            string values = allValues.Aggregate((x, y) => x + ", " + y);
-
-            string query = $"INSERT INTO {typeof(T).Name} ({fields}) VALUES ({values})";
-            int result = -1;
-
-            Console.WriteLine(query);
-
-            /// Method 1 - Using Dapper StaticParameters to create the query(avoid SQL injection attack)
-            //result = this.cnn.QueryFirstOrDefault<int>(query, entity); /// Get the inserted query result code (0 = success, -1 = fail)
-
-            /// Method 2 - Using Dapper DynamicParameters to create the query(avoid SQL injection attack)
-            /// Not tested
-            //result = this.cnn.QueryFirstOrDefault<int>(query, new DynamicParameters(entity)); /// Get the inserted query result code (0 = success, -1 = fail)
-
-            /// Method 3 - Using Dapper DynamicParameters to create the query(avoid SQL injection attack)
-            /// Not tested
-            result = this.cnn.Execute(query, new DynamicParameters(entity)); /// Get the inserted query result code (1 = success, -1 = fail)
-
-            return result;
-        }
-    }
-
-    /// <summary>
-    ///  Add a new entity to the database and return the entity with the Id
-    /// </summary>
-    /// <param name="entity"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
-    public T? AddReturnEntity(T entity)
-    {
-        if (entity == null)
-        {
-            throw new ArgumentNullException(nameof(entity));
-        }
-        else
-        {
-            PropertyInfo[]? entityProperties = entity.GetType().GetProperties();
-
-            string primaryKey = GetPrimaryKeyName();
-
-            IEnumerable<string> allFields = (
-                from f in entityProperties
-                where !f.Name.Contains(primaryKey)
-                select f.Name
-            );
-            IEnumerable<string> allValues = (
-                from v in entityProperties
-                where !v.Name.Contains(primaryKey)
-                select "@" + v.Name
-            );
-
-            string fields = allFields.Aggregate((x, y) => x + ", " + y);
-            string values = allValues.Aggregate((x, y) => x + ", " + y);
-
-            string query = $"INSERT INTO {typeof(T).Name} ({fields}) VALUES ({values});" +
-                            $"SELECT CAST(SCOPE_IDENTITY() as int)";
-            int newId = 0;
-
-            //Console.WriteLine(query);
-
-            newId = this.cnn.QuerySingle<int>(query, entity); /// Get the new Id
-
-            //Console.WriteLine(newId);
-
-            return this.GetById(newId);
-        }
-    }
-
-    public int AddOrUpdate(T entity)
-    {
-        throw new NotImplementedException();
-    }
-
-    public int Update(T entity)
-    {
-        if (entity == null)
-        {
-            throw new ArgumentNullException(nameof(entity));
-        }
-        else
-        {
-            PropertyInfo[]? entityProperties = entity.GetType().GetProperties();
-
-            string primaryKey = GetPrimaryKeyName();
-
-            IEnumerable<string> allFields = (
-                from f in entityProperties
-                where !f.Name.Contains(primaryKey)
-                select f.Name
-            );
-            IEnumerable<string> allValues = (
-                from v in entityProperties
-                where !v.Name.Contains(primaryKey)
-                select "@" + v.Name
-            );
-
-            /// Method 1 - Using LINQ and String.Join method to create the query
-            string updateFields = string.Join(", ", allFields.Select((f, i) => $"{f} = {allValues.ElementAt(i)}"));
-
-            /// Method 2 - Using LINQ and Zip method to create the query
-            //IEnumerable<string> numberFields = allFields.Zip(allValues, (f, v) => $"{f} = {v}");
-            //string updateFields = numberFields.Aggregate((x, y) => x + ", " + y);
-
-            /// Beacause of the values, we need to use reflection to get the values
-            string query = $"UPDATE {typeof(T).Name} SET {updateFields} WHERE {primaryKey} = @{primaryKey}";
-            int result = -1;
-
-            //Console.WriteLine(query);
-
-            /// Method 1 - Using Dapper StaticParameters to create the query (avoid SQL injection attack)
-            result = this.cnn.Execute(query, entity); /// Return the number of rows affected
-
-            return result;
-        }
-    }
-
-    public T? UpdateReturnEntity(T entity)
-    {
-        if (entity == null)
-        {
-            throw new ArgumentNullException(nameof(entity));
-        }
-        else
-        {
-            PropertyInfo[]? entityProperties = entity.GetType().GetProperties();
-
-            string primaryKey = GetPrimaryKeyName();
-
-            IEnumerable<string> allFields = (
-                from f in entityProperties
-                where !f.Name.Contains(primaryKey)
-                select f.Name
-            );
-            IEnumerable<string> allValues = (
-                from v in entityProperties
-                where !v.Name.Contains(primaryKey)
-                select "@" + v.Name
-            );
-
-            /// Method 1 - Using LINQ and String.Join method to create the query
-            string updateFields = string.Join(", ", allFields.Select((f, i) => $"{f} = {allValues.ElementAt(i)}"));
-
-            /// Method 2 - Using LINQ and Zip method to create the query
-            //IEnumerable<string> numberFields = allFields.Zip(allValues, (f, v) => $"{f} = {v}");
-            //string updateFields = numberFields.Aggregate((x, y) => x + ", " + y);
-
-            /// Beacause of the values, we need to use reflection to get the values
-            string query = $"UPDATE {typeof(T).Name} SET {updateFields} WHERE {primaryKey} = @{primaryKey};" +
-                $"SELECT * FROM {typeof(T).Name} WHERE {primaryKey} = @{primaryKey}";
-            ;
-
-            //Console.WriteLine(query);
-
-            /// Method 1 - Using Dapper StaticParameters to create the query (avoid SQL injection attack)
-            int editId = 0;
-
-            editId = this.cnn.QuerySingle<int>(query, entity); /// Return the Id of the edited entity
-
-            //Console.WriteLine(editId);
-
-            return this.GetById(editId);
-        }
-    }
-
-    public int Delete(T entity)
-    {
-        if (entity == null)
-        {
-            throw new ArgumentNullException(nameof(entity));
-        }
-        else
-        {
-            PropertyInfo[]? entityProperties = entity.GetType().GetProperties();
-
-            IEnumerable<string> allFields = (
-                from f in entityProperties
-                select f.Name
-            );
-            IEnumerable<string> allValues = (
-                from v in entityProperties
-                select "@" + v.Name
-            );
-
-            /// Method 1 - Using LINQ and String.Join method to create the query
-            //string deleteFields = string.Join(" AND ", allFields.Select((f, i) => $"{f} = {allValues.ElementAt(i)}"));
-
-            /// Method 2 - Using LINQ and Zip method to create the query
-            IEnumerable<string> numberFields = allFields.Zip(allValues, (f, v) => $"{f} = {v}");
-            string deleteFields = numberFields.Aggregate((x, y) => x + " AND " + y);
-
-            string query = $"DELETE FROM {typeof(T).Name} WHERE {deleteFields}";
-
-            //Console.WriteLine(query);
-
-            /// Method 1 - Using Dapper StaticParameters to create the query (avoid SQL injection attack)
-            int result = -1;
-
-            result = this.cnn.Execute(query, entity); /// Return the number of rows affected
-
-            return result;
-        }
-    }
-
-    /// <summary>
-    /// The method is current best practice to add multiple records to database
-    /// Such as, add 10 ^ 5 records to database at 18 seconds 
-    /// Such as, add 10 ^ 6 records to database at 3 minutes 50 seconds to 4 minutes 10 seconds 
-    /// (I think it is slow, because 10 ^ 5 write to database need 18 seconds to 20 seconds, 
-    /// then 10 ^ 6 should within 200 seconds, but test result get 250 seconds)
-    /// </summary>
-    /// <param name="entities"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
-    public int AddRange(IEnumerable<T> entities)
-    {
-        if (entities == null)
-        {
-            throw new ArgumentNullException(nameof(entities));
-        }
-        else
-        {
-            PropertyInfo[]? entityProperties = entities.FirstOrDefault()?.GetType().GetProperties();
-
-            string primaryKey = GetPrimaryKeyName();
-
-            IEnumerable<string> allFields = (
-                from f in entityProperties
-                where !f.Name.Contains(primaryKey)
-                select f.Name
-            );
-            IEnumerable<string> allValues = (
-                from v in entityProperties
-                where !v.Name.Contains(primaryKey)
-                select "@" + v.Name
-            );
-
-            string fields = allFields.Aggregate((x, y) => x + ", " + y);
-            string values = allValues.Aggregate((x, y) => x + ", " + y);
-
-            int take = 1000;
-            int skip = 0;
-            int count = entities.Count();
-
-            //Console.WriteLine(count);
-
-            string query = string.Empty;
-            int result = 0;
-
-            while (count > 0)
+            if (primaryKey == null)
             {
-                IEnumerable<T> entitiesTake = entities.Skip(skip).Take(take);
-
-                query = $"INSERT INTO {typeof(T).Name} ({fields}) VALUES ({values})";
-
-                result += this.cnn.Execute(query, entitiesTake); /// Return the number of rows affected
-
-                //Console.WriteLine($"count: {count}, skip: {skip}, take: {take}");
-
-                skip += take;
-                count -= take;
+                throw new ArgumentNullException(nameof(primaryKey));
             }
-            return result;
+
+            _loggerHelper.LogDebug($"Primary key name: {primaryKey}", className, nameof(GetPrimaryKeyName));
+
+            return primaryKey;
         }
-    }
 
-    /// <summary>
-    /// The method is current best practice to update multiple records to database
-    /// But the method is not good, because it spend too much time to update
-    /// </summary>
-    /// <param name="entities"></param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
-    public int UpdateRange(List<T> entities)
-    {
-        if (entities == null)
+        public List<T> GetAll()
         {
-            throw new ArgumentNullException(nameof(entities));
+            return _dapperProvider.Connect().Query<T>($"SELECT * FROM {typeof(T).Name}").ToList();
         }
-        else
+
+        public T GetFirst()
         {
-            PropertyInfo[]? entityProperties = entities.FirstOrDefault()?.GetType().GetProperties();
+            return _dapperProvider.Connect().QueryFirstOrDefault<T>($"SELECT TOP 1 * FROM {typeof(T).Name}");
+        }
 
-            string primaryKey = GetPrimaryKeyName();
+        public T GetLast()
+        {
+            return _dapperProvider.Connect().QueryFirstOrDefault<T>($"SELECT TOP 1 * FROM {typeof(T).Name} ORDER BY {GetPrimaryKeyName()} DESC");
+        }
 
-            IEnumerable<string> allFields = (
-                from f in entityProperties
-                where !f.Name.Contains(primaryKey)
-                select f.Name
-            );
+        public T GetById(int id)
+        {
+            return _dapperProvider.Connect().QueryFirstOrDefault<T>($"SELECT * FROM {typeof(T).Name} WHERE {GetPrimaryKeyName()} = @Id", new { Id = id });
+        }
 
-            IEnumerable<string> allValues = (
-               from v in entityProperties
-               where !v.Name.Contains(primaryKey)
-               select "@" + v.Name
-            );
+        public int GetCount()
+        {
+            return _dapperProvider.Connect().QueryFirstOrDefault<int>($"SELECT COUNT(*) FROM {typeof(T).Name}");
+        }
 
-            /// Method 1 - Using LINQ and String.Join method to create the query
-            string updateFields = string.Join(", ", allFields.Select((f, i) => $"{f} = {allValues.ElementAt(i)}"));
-            /// Method 2 - Using LINQ and Zip method to create the query
-            //IEnumerable<string> numberFields = allFields.Zip(allValues, (f, v) => $"{f} = {v}");
-            //string updateFields = numberFields.Aggregate((x, y) => x + ", " + y);
-
-            int take = 1000;
-            int skip = 0;
-            int count = entities.Count();
-
-            //Console.WriteLine(count);
-
-            string query = string.Empty;
-
-            int result = 0;
-
-            while (count > 0)
+        public List<T> GetWhere(Expression<Func<T, bool>> predicate)
+        {
+            List<string> allQueryList = new List<string>()
             {
-                query = $"UPDATE {typeof(T).Name} SET {updateFields} WHERE {primaryKey} = @{primaryKey}";
+                $"SELECT * FROM {typeof(T).Name} WHERE {predicate.Compile()}",
+                $"SELECT * FROM {typeof(T).Name} WHERE {predicate.Body}",
+                $"SELECT * FROM {typeof(T).Name} WHERE {predicate.Body.ToString().Replace("AndAlso", "AND").Replace("OrElse", "OR")}",
+                $"SELECT * FROM {typeof(T).Name} WHERE {predicate.Body.ToString().Replace("AndAlso", "AND").Replace("OrElse", "OR").Replace("==", "=")}",
+                $"SELECT * FROM {typeof(T).Name} WHERE {predicate.Body.ToString().Replace("AndAlso", "AND").Replace("OrElse", "OR").Replace("==", "=").Replace("True", "1").Replace("False", "0").Replace("x.", "")}",
+                $""
+            };
 
-                IEnumerable<T> entitiesTake = entities.Skip(skip).Take(take);
+            string query = allQueryList[5];
+            string methodName = nameof(GetWhere);
 
-                result += this.cnn.Execute(query, entitiesTake);
-
-                //Console.WriteLine($"count: {count}, skip: {skip}, take: {take}");
-
-                skip += take;
-                count -= take;
+            foreach (string temp in allQueryList)
+            {
+                _loggerHelper.LogDebug($"Current read query: {temp}", className, methodName);
             }
-            return result;
+
+            //return _dapperProvider.Connect().Query<T>($"SELECT * FROM {typeof(T).Name}").Where(predicate.Compile()).ToList();
+            return _dapperProvider.Connect().Query<T>(query).ToList();
         }
-    }
 
-    public int DeleteRange(List<T> entities)
-    {
-        if (entities == null)
+        public List<T> GetTake(int take)
         {
-            throw new ArgumentNullException(nameof(entities));
+            return _dapperProvider.Connect().Query<T>($"SELECT TOP {take} * FROM {typeof(T).Name}").ToList();
         }
-        else
+
+        public List<T> GetTakeReverse(int take)
         {
-            PropertyInfo[]? entityProperties = entities.FirstOrDefault()?.GetType().GetProperties();
+            return _dapperProvider.Connect().Query<T>($"SELECT TOP {take} * FROM {typeof(T).Name} ORDER BY {GetPrimaryKeyName()} DESC").ToList();
+        }
 
-            string primaryKey = GetPrimaryKeyName();
+        public List<T> GetSkip(int skip)
+        {
+            return _dapperProvider.Connect().Query<T>($"SELECT * FROM {typeof(T).Name} ORDER BY {GetPrimaryKeyName()} ASC OFFSET {skip} ROWS").ToList();
+        }
 
-            int take = 1000;
-            int skip = 0;
-            int count = entities.Count();
-            int result = 0;
+        public List<T> GetSkipReverse(int skip)
+        {
+            return _dapperProvider.Connect().Query<T>($"SELECT * FROM {typeof(T).Name} ORDER BY {GetPrimaryKeyName()} DESC OFFSET {skip} ROWS").ToList();
+        }
 
-            //Console.WriteLine(count);
+        public List<T> GetTakeSkip(int take, int skip)
+        {
+            return _dapperProvider.Connect().Query<T>(
+                $"SELECT * FROM {typeof(T).Name} ORDER BY {GetPrimaryKeyName()} ASC OFFSET {skip} ROWS FETCH NEXT {take} ROWS ONLY"
+            ).ToList();
+        }
 
-            int[] allIds = (
-                from e in entities
-                where e.GetType()?.GetProperty(primaryKey)?.GetValue(e) != null
-                select (int)e.GetType()?.GetProperty(primaryKey)?.GetValue(e)
-            ).ToArray();
+        public List<T> GetTakeSkipReverse(int take, int skip)
+        {
+            return _dapperProvider.Connect().Query<T>(
+                $"SELECT * FROM {typeof(T).Name} ORDER BY {GetPrimaryKeyName()} DESC OFFSET {skip} ROWS FETCH NEXT {take} ROWS ONLY"
+            ).ToList();
+        }
 
-            int[] ids = new int[] { };
-
-            while (count > 0)
+        /// <summary>
+        /// Add a new entity to the database and return inserted query result code (0 = success, -1 = fail)
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public int Add(T entity)
+        {
+            if (entity == null)
             {
-                IEnumerable<T> entitiesTake = entities.Skip(skip).Take(take);
+                throw new ArgumentNullException(nameof(entity));
+            }
+            else
+            {
+                PropertyInfo[]? entityProperties = entity.GetType().GetProperties();
 
-                string query = $"DELETE FROM {typeof(T).Name} WHERE {primaryKey} IN @ids";
+                string primaryKey = GetPrimaryKeyName();
+
+                IEnumerable<string> allFields = (
+                    from f in entityProperties
+                    where !f.Name.Contains(primaryKey)
+                    select f.Name
+                );
+                IEnumerable<string> allValues = (
+                    from v in entityProperties
+                    where !v.Name.Contains(primaryKey)
+                    select "@" + v.Name
+                );
+
+                string fields = allFields.Aggregate((x, y) => x + ", " + y);
+                string values = allValues.Aggregate((x, y) => x + ", " + y);
+
+                string query = $"INSERT INTO {typeof(T).Name} ({fields}) VALUES ({values})";
+                int result = -1;
 
                 //Console.WriteLine(query);
 
-                ids = allIds.Skip(skip).Take(take).ToArray();
+                /// Method 1 - Using Dapper StaticParameters to create the query(avoid SQL injection attack)
+                //result = _dapperProvider.Connect().QueryFirstOrDefault<int>(query, entity); /// Get the inserted query result code (0 = success, -1 = fail)
 
-                //Console.WriteLine($"Remove data count: {ids.Length}");
+                /// Method 2 - Using Dapper DynamicParameters to create the query(avoid SQL injection attack)
+                /// Not tested
+                //result = _dapperProvider.Connect().QueryFirstOrDefault<int>(query, new DynamicParameters(entity)); /// Get the inserted query result code (0 = success, -1 = fail)
 
-                if (ids.Length > 0)
-                {
-                    //foreach (int id in ids)
-                    //{
-                    //    Console.WriteLine(id);
-                    //}
-                    result += this.cnn.Execute(query, new { ids }); /// Return the number of rows affected
-                }
-                skip += take;
-                count -= take;
+                /// Method 3 - Using Dapper DynamicParameters to create the query(avoid SQL injection attack)
+                /// Not tested
+                result = _dapperProvider.Connect().Execute(query, new DynamicParameters(entity)); /// Get the inserted query result code (1 = success, -1 = fail)
+
+                return result;
             }
-            return result;
         }
-    }
 
-    public T? GetFirstOrDefault(Expression<Func<T, bool>> predicate)
-    {
-        throw new NotImplementedException();
-    }
+        /// <summary>
+        ///  Add a new entity to the database and return the entity with the Id
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public T? AddReturnEntity(T entity)
+        {
+            if (entity == null)
+            {
+                throw new ArgumentNullException(nameof(entity));
+            }
+            else
+            {
+                PropertyInfo[]? entityProperties = entity.GetType().GetProperties();
 
-    public IQueryable GetAllOri()
-    {
-        throw new NotImplementedException();
+                string primaryKey = GetPrimaryKeyName();
+
+                IEnumerable<string> allFields = (
+                    from f in entityProperties
+                    where !f.Name.Contains(primaryKey)
+                    select f.Name
+                );
+                IEnumerable<string> allValues = (
+                    from v in entityProperties
+                    where !v.Name.Contains(primaryKey)
+                    select "@" + v.Name
+                );
+
+                string fields = allFields.Aggregate((x, y) => x + ", " + y);
+                string values = allValues.Aggregate((x, y) => x + ", " + y);
+
+                string query = $"INSERT INTO {typeof(T).Name} ({fields}) VALUES ({values});" +
+                                $"SELECT CAST(SCOPE_IDENTITY() as int)";
+                int newId = 0;
+
+                //Console.WriteLine(query);
+
+                newId = _dapperProvider.Connect().QuerySingle<int>(query, entity); /// Get the new Id
+
+                //Console.WriteLine(newId);
+
+                return this.GetById(newId);
+            }
+        }
+
+        public int Update(T entity)
+        {
+            if (entity == null)
+            {
+                throw new ArgumentNullException(nameof(entity));
+            }
+            else
+            {
+                PropertyInfo[]? entityProperties = entity.GetType().GetProperties();
+
+                string primaryKey = GetPrimaryKeyName();
+
+                IEnumerable<string> allFields = (
+                    from f in entityProperties
+                    where !f.Name.Contains(primaryKey)
+                    select f.Name
+                );
+                IEnumerable<string> allValues = (
+                    from v in entityProperties
+                    where !v.Name.Contains(primaryKey)
+                    select "@" + v.Name
+                );
+
+                /// Method 1 - Using LINQ and String.Join method to create the query
+                string updateFields = string.Join(", ", allFields.Select((f, i) => $"{f} = {allValues.ElementAt(i)}"));
+
+                /// Method 2 - Using LINQ and Zip method to create the query
+                //IEnumerable<string> numberFields = allFields.Zip(allValues, (f, v) => $"{f} = {v}");
+                //string updateFields = numberFields.Aggregate((x, y) => x + ", " + y);
+
+                /// Beacause of the values, we need to use reflection to get the values
+                string query = $"UPDATE {typeof(T).Name} SET {updateFields} WHERE {primaryKey} = @{primaryKey}";
+                int result = -1;
+
+                //Console.WriteLine(query);
+
+                /// Method 1 - Using Dapper StaticParameters to create the query (avoid SQL injection attack)
+                result = _dapperProvider.Connect().Execute(query, entity); /// Return the number of rows affected
+
+                return result;
+            }
+        }
+
+        public T? UpdateReturnEntity(T entity)
+        {
+            if (entity == null)
+            {
+                throw new ArgumentNullException(nameof(entity));
+            }
+            else
+            {
+                PropertyInfo[]? entityProperties = entity.GetType().GetProperties();
+
+                string primaryKey = GetPrimaryKeyName();
+
+                IEnumerable<string> allFields = (
+                    from f in entityProperties
+                    where !f.Name.Contains(primaryKey)
+                    select f.Name
+                );
+                IEnumerable<string> allValues = (
+                    from v in entityProperties
+                    where !v.Name.Contains(primaryKey)
+                    select "@" + v.Name
+                );
+
+                /// Method 1 - Using LINQ and String.Join method to create the query
+                string updateFields = string.Join(", ", allFields.Select((f, i) => $"{f} = {allValues.ElementAt(i)}"));
+
+                /// Method 2 - Using LINQ and Zip method to create the query
+                //IEnumerable<string> numberFields = allFields.Zip(allValues, (f, v) => $"{f} = {v}");
+                //string updateFields = numberFields.Aggregate((x, y) => x + ", " + y);
+
+                /// Beacause of the values, we need to use reflection to get the values
+                string query = $"UPDATE {typeof(T).Name} SET {updateFields} WHERE {primaryKey} = @{primaryKey};" +
+                    $"SELECT * FROM {typeof(T).Name} WHERE {primaryKey} = @{primaryKey}";
+                ;
+
+                //Console.WriteLine(query);
+
+                /// Method 1 - Using Dapper StaticParameters to create the query (avoid SQL injection attack)
+                int editId = 0;
+
+                editId = _dapperProvider.Connect().QuerySingle<int>(query, entity); /// Return the Id of the edited entity
+
+                //Console.WriteLine(editId);
+
+                return this.GetById(editId);
+            }
+        }
+
+        public int Delete(T entity)
+        {
+            if (entity == null)
+            {
+                throw new ArgumentNullException(nameof(entity));
+            }
+            else
+            {
+                PropertyInfo[]? entityProperties = entity.GetType().GetProperties();
+
+                IEnumerable<string> allFields = (
+                    from f in entityProperties
+                    select f.Name
+                );
+                IEnumerable<string> allValues = (
+                    from v in entityProperties
+                    select "@" + v.Name
+                );
+
+                /// Method 1 - Using LINQ and String.Join method to create the query
+                //string deleteFields = string.Join(" AND ", allFields.Select((f, i) => $"{f} = {allValues.ElementAt(i)}"));
+
+                /// Method 2 - Using LINQ and Zip method to create the query
+                IEnumerable<string> numberFields = allFields.Zip(allValues, (f, v) => $"{f} = {v}");
+                string deleteFields = numberFields.Aggregate((x, y) => x + " AND " + y);
+
+                string query = $"DELETE FROM {typeof(T).Name} WHERE {deleteFields}";
+
+                //Console.WriteLine(query);
+
+                /// Method 1 - Using Dapper StaticParameters to create the query (avoid SQL injection attack)
+                int result = -1;
+
+                result = _dapperProvider.Connect().Execute(query, entity); /// Return the number of rows affected
+
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// The method is current best practice to add multiple records to database
+        /// Such as, add 10 ^ 5 records to database at 18 seconds 
+        /// Such as, add 10 ^ 6 records to database at 3 minutes 50 seconds to 4 minutes 10 seconds 
+        /// (I think it is slow, because 10 ^ 5 write to database need 18 seconds to 20 seconds, 
+        /// then 10 ^ 6 should within 200 seconds, but test result get 250 seconds)
+        /// </summary>
+        /// <param name="entities"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public int AddRange(IEnumerable<T> entities)
+        {
+            if (entities == null)
+            {
+                throw new ArgumentNullException(nameof(entities));
+            }
+            else
+            {
+                PropertyInfo[]? entityProperties = entities.FirstOrDefault()?.GetType().GetProperties();
+
+                string primaryKey = GetPrimaryKeyName();
+
+                IEnumerable<string> allFields = (
+                    from f in entityProperties
+                    where !f.Name.Contains(primaryKey)
+                    select f.Name
+                );
+                IEnumerable<string> allValues = (
+                    from v in entityProperties
+                    where !v.Name.Contains(primaryKey)
+                    select "@" + v.Name
+                );
+
+                string fields = allFields.Aggregate((x, y) => x + ", " + y);
+                string values = allValues.Aggregate((x, y) => x + ", " + y);
+
+                int take = 1000;
+                int skip = 0;
+                int count = entities.Count();
+
+                //Console.WriteLine(count);
+
+                string query = string.Empty;
+                int result = 0;
+
+                while (count > 0)
+                {
+                    IEnumerable<T> entitiesTake = entities.Skip(skip).Take(take);
+
+                    query = $"INSERT INTO {typeof(T).Name} ({fields}) VALUES ({values})";
+
+                    result += _dapperProvider.Connect().Execute(query, entitiesTake); /// Return the number of rows affected
+
+                    //Console.WriteLine($"count: {count}, skip: {skip}, take: {take}");
+
+                    skip += take;
+                    count -= take;
+                }
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// The method is current best practice to update multiple records to database
+        /// But the method is not good, because it spend too much time to update
+        /// </summary>
+        /// <param name="entities"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public int UpdateRange(List<T> entities)
+        {
+            if (entities == null)
+            {
+                throw new ArgumentNullException(nameof(entities));
+            }
+            else
+            {
+                PropertyInfo[]? entityProperties = entities.FirstOrDefault()?.GetType().GetProperties();
+
+                string primaryKey = GetPrimaryKeyName();
+
+                IEnumerable<string> allFields = (
+                    from f in entityProperties
+                    where !f.Name.Contains(primaryKey)
+                    select f.Name
+                );
+
+                IEnumerable<string> allValues = (
+                   from v in entityProperties
+                   where !v.Name.Contains(primaryKey)
+                   select "@" + v.Name
+                );
+
+                /// Method 1 - Using LINQ and String.Join method to create the query
+                string updateFields = string.Join(", ", allFields.Select((f, i) => $"{f} = {allValues.ElementAt(i)}"));
+                /// Method 2 - Using LINQ and Zip method to create the query
+                //IEnumerable<string> numberFields = allFields.Zip(allValues, (f, v) => $"{f} = {v}");
+                //string updateFields = numberFields.Aggregate((x, y) => x + ", " + y);
+
+                int take = 1000;
+                int skip = 0;
+                int count = entities.Count();
+
+                //Console.WriteLine(count);
+
+                string query = string.Empty;
+
+                int result = 0;
+
+                while (count > 0)
+                {
+                    query = $"UPDATE {typeof(T).Name} SET {updateFields} WHERE {primaryKey} = @{primaryKey}";
+
+                    IEnumerable<T> entitiesTake = entities.Skip(skip).Take(take);
+
+                    result += _dapperProvider.Connect().Execute(query, entitiesTake);
+
+                    //Console.WriteLine($"count: {count}, skip: {skip}, take: {take}");
+
+                    skip += take;
+                    count -= take;
+                }
+                return result;
+            }
+        }
+
+        public int DeleteRange(List<T> entities)
+        {
+            if (entities == null)
+            {
+                throw new ArgumentNullException(nameof(entities));
+            }
+            else
+            {
+                PropertyInfo[]? entityProperties = entities.FirstOrDefault()?.GetType().GetProperties();
+
+                string primaryKey = GetPrimaryKeyName();
+
+                int take = 1000;
+                int skip = 0;
+                int count = entities.Count();
+                int result = 0;
+
+                //Console.WriteLine(count);
+
+                int[] allIds = (
+                    from e in entities
+                    where e.GetType()?.GetProperty(primaryKey)?.GetValue(e) != null
+                    select (int)e.GetType()?.GetProperty(primaryKey)?.GetValue(e)
+                ).ToArray();
+
+                int[] ids = new int[] { };
+
+                while (count > 0)
+                {
+                    IEnumerable<T> entitiesTake = entities.Skip(skip).Take(take);
+
+                    string query = $"DELETE FROM {typeof(T).Name} WHERE {primaryKey} IN @ids";
+
+                    //Console.WriteLine(query);
+
+                    ids = allIds.Skip(skip).Take(take).ToArray();
+
+                    //Console.WriteLine($"Remove data count: {ids.Length}");
+
+                    if (ids.Length > 0)
+                    {
+                        result += _dapperProvider.Connect().Execute(query, new { ids }); /// Return the number of rows affected
+                    }
+                    skip += take;
+                    count -= take;
+                }
+                return result;
+            }
+        }
+        public T? GetFirstOrDefault(Expression<Func<T, bool>> predicate)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsTableExists()
+        {
+            int result = _dapperProvider.Connect().QueryFirst<int>($"SELECT CASE WHEN OBJECT_ID('{typeof(T).Name}', 'U') IS NOT NULL THEN 1 ELSE 0 END");
+            return result > 0;
+        }
     }
 }

@@ -1,22 +1,21 @@
 ﻿using Dapper;
-using System.Collections.Generic;
-using System;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Reflection;
+using DataAccess.Data.IData;
 using DataAccess.Repositories.IRepositories;
 using Models.DAO.NEC.Test;
-
+using System.Reflection;
+using Utilities.Helper.IHelper;
 
 namespace DataAccess.Repositories
 {
     public class APLogRepository : Repository<APLog>, IAPLog_Repository
     {
-        private readonly SqlConnection cnn;
+        private readonly IDapperConnectionProvider _dapperProvider;
+        private readonly ILoggerHelper _loggerHelper;
 
-        public APLogRepository(SqlConnection cnn) : base(cnn)
+        public APLogRepository(IDapperConnectionProvider dapperProvider, ILoggerHelper loggerHelper) : base(dapperProvider, loggerHelper)
         {
-            this.cnn = cnn;
+            _dapperProvider = dapperProvider;
+            _loggerHelper = loggerHelper;
         }
 
         public APLog GetRecordByNameAndLogTime(string name, string logTime)
@@ -24,7 +23,7 @@ namespace DataAccess.Repositories
             APLog result;
             string query = $"SELECT * FROM [dbo].[APLog] WHERE [JobName] = '{name}' AND [LogDateTime] = '{logTime}'";
 
-            result = this.cnn.Query<APLog>(query).FirstOrDefault();
+            result = _dapperProvider.Connect().Query<APLog>(query).FirstOrDefault();
 
             return result;
         }
@@ -34,7 +33,7 @@ namespace DataAccess.Repositories
             APLog result;
             string query = $"SELECT * FROM [dbo].[APLog] WHERE [JobName] = '{name}' AND [LogDateTime] = '{logTime}'";
 
-            result = this.cnn.Query<APLog>(query).FirstOrDefault();
+            result = _dapperProvider.Connect().Query<APLog>(query).FirstOrDefault();
 
             return result;
         }
@@ -44,7 +43,7 @@ namespace DataAccess.Repositories
             bool result;
             string query = "SELECT COUNT(*) FROM [dbo].[APLog] WHERE [JobName] = @JobName AND [LogDateTime] = @LogDateTime";
 
-            result = this.cnn.Query<int>(query, new { JobName = name, LogDateTime = logTime }).FirstOrDefault() > 0;
+            result = _dapperProvider.Connect().Query<int>(query, new { JobName = name, LogDateTime = logTime }).FirstOrDefault() > 0;
 
             return result;
         }
@@ -55,7 +54,7 @@ namespace DataAccess.Repositories
         /// <param name="entity"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public override int Add(APLog entity)
+        public new int Add(APLog entity)
         {
             if (entity == null)
             {
@@ -67,16 +66,16 @@ namespace DataAccess.Repositories
 
                 string primaryKey = GetPrimaryKeyName();
 
-                IEnumerable<string> allFields = (
+                IEnumerable<string> allFields =
                     from f in entityProperties
                     where !f.Name.Contains(primaryKey)
                     select f.Name
-                );
-                IEnumerable<string> allValues = (
+                ;
+                IEnumerable<string> allValues =
                     from v in entityProperties
                     where !v.Name.Contains(primaryKey)
                     select "@" + v.Name
-                );
+                ;
 
                 string fields = allFields.Aggregate((x, y) => x + ", " + y);
                 string values = allValues.Aggregate((x, y) => x + ", " + y);
@@ -92,14 +91,14 @@ namespace DataAccess.Repositories
                 {
                     query = $"IF NOT EXISTS (SELECT * FROM [dbo].[APLog] WHERE [JobName] = @JobName AND [LogDateTime] = @LogDateTime) INSERT INTO [dbo].[APLog] ({fields}) VALUES ({values})";
                 }
-                 
+
                 int result = -1;
 
                 //Console.WriteLine(query);
 
                 /// Method 3 - Using Dapper DynamicParameters to create the query(avoid SQL injection attack)
                 /// Not tested
-                result = this.cnn.Execute(query, new DynamicParameters(entity)); /// Get the inserted query result code (1 = success, -1 = fail)
+                result = _dapperProvider.Connect().Execute(query, new DynamicParameters(entity)); /// Get the inserted query result code (1 = success, -1 = fail)
 
                 Console.WriteLine("Add entity to database result: " + result);
 

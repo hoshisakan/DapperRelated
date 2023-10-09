@@ -11,7 +11,6 @@ namespace DapperWithDependencyInjection
     {
         static void Main(string[] args)
         {
-
             /// Build service collection
             ServiceCollection services = new ServiceCollection();
 
