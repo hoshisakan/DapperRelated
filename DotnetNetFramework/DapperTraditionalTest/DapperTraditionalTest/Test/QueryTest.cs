@@ -28,6 +28,7 @@ namespace DapperTraditionalTest.Test
                 {"Kiosk_tblMember",  _unitWork.Kiosk_TblMember_Repository.IsTableExists()},
             };
             _loggerHelper.LogDebug(_jsonHelper.Serialize(tempAllTableCheckResult), nameof(QueryTest), nameof(IsTableExists));
+            Console.WriteLine(_jsonHelper.Serialize(tempAllTableCheckResult));
         }
 
         public void TestAPLog_Parameter()

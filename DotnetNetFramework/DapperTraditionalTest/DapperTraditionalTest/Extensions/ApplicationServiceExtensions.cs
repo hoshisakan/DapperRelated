@@ -6,6 +6,7 @@ using DataAccess.Repositories;
 using DataAccess.Repositories.IRepositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics;
 using Utilities.Helper;
 using Utilities.Helper.IHelper;
 
@@ -48,6 +49,10 @@ namespace DapperTraditionalTest.Extensions
 
             /// Get services from service provider of service scope
             IJsonConfigurationHelper _jsonConfigurationHelper = service.GetRequiredService<IJsonConfigurationHelper>();
+
+            Stopwatch sw = new Stopwatch();
+
+            services.AddSingleton<IStopwatchHelper>(new StopwatchHelper(_loggerHelper, sw));
 
             string connectionStringKeyName = "SelfConnection";
 

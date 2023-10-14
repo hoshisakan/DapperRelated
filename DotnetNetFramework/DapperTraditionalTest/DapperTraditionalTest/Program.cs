@@ -44,7 +44,7 @@ namespace DataAccess
             ILoggerHelper? _loggerHelper = service.GetRequiredService<ILoggerHelper>();
             IQueryTest? _queryTest = service.GetRequiredService<IQueryTest>();
             ISystemHelper? _systemHelper = service.GetRequiredService<ISystemHelper>();
-            //IStopwatchHelper? _stopwatchHelper = scope.ServiceProvider.GetRequiredService<IStopwatchHelper>();
+            IStopwatchHelper? _stopwatchHelper = scope.ServiceProvider.GetRequiredService<IStopwatchHelper>();
             #endregion Get services from service scope
 
             try
@@ -52,7 +52,7 @@ namespace DataAccess
                 //_queryTest.TestKiosk_Parameter();
                 //_queryTest.TestFileTable();
                 //_queryTest.TestAPLog_Parameter();
-                _queryTest.IsTableExists();
+                _stopwatchHelper.Timer(() => _queryTest.IsTableExists(), 1);
             }
             catch (Exception ex)
             {

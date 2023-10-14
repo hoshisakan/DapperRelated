@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Utilities.Helper.IHelper
+﻿namespace Utilities.Helper.IHelper
 {
     public interface IStopwatchHelper
     {
-        public void Timer(Stopwatch sw, Action action);
-        public void Timer(Stopwatch sw, Action action, int iterations);
+        public void Timer(Action action);
+        public void Timer(Action action, int iterations);
     }
 }

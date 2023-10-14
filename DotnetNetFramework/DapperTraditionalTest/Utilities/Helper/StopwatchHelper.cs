@@ -7,14 +7,16 @@ namespace Utilities.Helper
     public class StopwatchHelper : IStopwatchHelper
     {
         private readonly string className = nameof(StopwatchHelper);
-        private readonly Lazy<ILoggerHelper> _loggerHelper;
+        private readonly ILoggerHelper _loggerHelper;
+        private readonly Stopwatch _stopwatch;
 
-        public StopwatchHelper(Lazy<ILoggerHelper> loggerHelper)
+        public StopwatchHelper(ILoggerHelper loggerHelper, Stopwatch stopwatch)
         {
             this._loggerHelper = loggerHelper;
+            this._stopwatch = stopwatch;
         }
 
-        public void Timer(Stopwatch sw, Action action)
+        public void Timer(Action action)
         {
             string methodName = nameof(Timer);
 
@@ -24,21 +26,22 @@ namespace Utilities.Helper
             }
             else
             {
-                sw.Start();
+                _stopwatch.Start();
                 action();
-                sw.Stop();
+                _stopwatch.Stop();
 
                 //LogHelper.WriteLog(LogLevelEnum.DEBUG, className, methodName, $"Elapsed time: {sw.ElapsedMilliseconds} ms");
 
-                TimeSpan ts = sw.Elapsed;
+                TimeSpan ts = _stopwatch.Elapsed;
                 string elapsedTime = string.Format("{0:00}:{1:00}:{2:00}.{3:00}",
                            ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10);
 
-                _loggerHelper.Value.LogDebug($"Run time: {elapsedTime}", className, methodName);
+                Console.WriteLine($"Run time: {elapsedTime}, className: {className}, methodName: {methodName}");
+                _loggerHelper.LogDebug($"Run time: {elapsedTime}", className, methodName);
             }
         }
 
-        public void Timer(Stopwatch sw, Action action, int iterations)
+        public void Timer(Action action, int iterations)
         {
             string methodName = nameof(Timer);
 
@@ -48,21 +51,22 @@ namespace Utilities.Helper
             }
             else
             {
-                sw.Reset();
-                sw.Start();
+                _stopwatch.Reset();
+                _stopwatch.Start();
                 for (int i = 0; i < iterations; i++)
                 {
                     action();
                 }
-                sw.Stop();
+                _stopwatch.Stop();
 
                 //LogHelper.WriteLog(LogLevelEnum.DEBUG, className, methodName, $"Elapsed time: {sw.ElapsedMilliseconds} ms");
 
-                TimeSpan ts = sw.Elapsed;
+                TimeSpan ts = _stopwatch.Elapsed;
                 string elapsedTime = string.Format("{0:00}:{1:00}:{2:00}.{3:00}",
                            ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10);
 
-                _loggerHelper.Value.LogDebug($"Run time: {elapsedTime}", className, methodName);
+                Console.WriteLine($"Run time: {elapsedTime}, className: {className}, methodName: {methodName}");
+                _loggerHelper.LogDebug($"Run time: {elapsedTime}", className, methodName);
             }
         }
     }

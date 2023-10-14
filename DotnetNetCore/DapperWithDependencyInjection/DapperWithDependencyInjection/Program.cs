@@ -44,12 +44,13 @@ namespace DapperWithDependencyInjection
             ILoggerHelper? _loggerHelper = service.GetRequiredService<ILoggerHelper>();
             IDapperTest? _dapperTest = service.GetRequiredService<IDapperTest>();
             ISystemHelper? _systemHelper = service.GetRequiredService<ISystemHelper>();
-            //IStopwatchHelper? _stopwatchHelper = scope.ServiceProvider.GetRequiredService<IStopwatchHelper>();
+            IStopwatchHelper? _stopwatchHelper = scope.ServiceProvider.GetRequiredService<IStopwatchHelper>();
             #endregion Get services from service scope
 
             try
             {
-                _dapperTest.TestByPersonWithUnitWork();
+                //Stopwatch sw = new Stopwatch();
+                _stopwatchHelper.Timer(_dapperTest.TestByPersonWithUnitWork, _jsonConfigurationHelper.GetAppSettingInt("Iterations", 1000));
             }
             catch (Exception ex)
             {

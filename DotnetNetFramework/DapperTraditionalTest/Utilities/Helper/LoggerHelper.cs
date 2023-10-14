@@ -29,7 +29,6 @@ namespace Utilities.Helper
         private readonly string LOG_DIRNAME;
         private readonly string LOG_FILENAME;
         private readonly string LOG_FILE_CONTENT_DATE;
-        private readonly Dictionary<LogLevelEnum, string> LOG_LEVEL;
 
         public LoggerHelper(
             IJsonConfigurationHelper jsonConfigurationHelper, IDateTimeHelper dateTimeHelper,
@@ -49,22 +48,11 @@ namespace Utilities.Helper
             this.LOG_DIRNAME = Path.Combine(LOG_PATH, _systemHelper.Value.GetApplicationName());
             this.LOG_FILENAME = $"{_dateTimeHelper.GetCurrentDateTimeString(LOG_FILE_DATE_FORMAT)}.log";
             this.LOG_FILE_CONTENT_DATE = _dateTimeHelper.GetCurrentDateTimeString(LOG_FILE_CONTENT_DATE_FORMAT);
-            this.LOG_LEVEL = new Dictionary<LogLevelEnum, string>
-            {
-                {LogLevelEnum.ALL, "ALL"},
-                {LogLevelEnum.TRACE, "TRC"},
-                {LogLevelEnum.DEBUG, "DEG"},
-                {LogLevelEnum.INFO, "INF"},
-                {LogLevelEnum.WARN, "WAR"},
-                {LogLevelEnum.ERROR, "ERR"},
-                {LogLevelEnum.FATAL, "FAT"},
-                {LogLevelEnum.OFF, "OFF"}
-            };
         }
 
         public void LogALL(string message)
         {
-            WriteLog(new LoggerDto { LogLevel = LOG_LEVEL[LogLevelEnum.ALL], Message = message });
+            WriteLog(new LoggerDto { LogLevel = GetLogLevelName(LogLevelEnum.ALL), Message = message });
         }
 
         public void LogALL(string message, string className = "", string methodName = "")
@@ -72,7 +60,7 @@ namespace Utilities.Helper
             WriteLog(
                 new LoggerDto
                 {
-                    LogLevel = LOG_LEVEL[LogLevelEnum.ALL],
+                    LogLevel = GetLogLevelName(LogLevelEnum.ALL),
                     Message = message,
                     ClassName = className,
                     MethodName = methodName
@@ -82,7 +70,7 @@ namespace Utilities.Helper
 
         public void LogTrace(string message)
         {
-            WriteLog(new LoggerDto { LogLevel = LOG_LEVEL[LogLevelEnum.TRACE], Message = message });
+            WriteLog(new LoggerDto { LogLevel = GetLogLevelName(LogLevelEnum.TRACE), Message = message });
         }
 
         public void LogTrace(string message, string className = "", string methodName = "")
@@ -90,7 +78,7 @@ namespace Utilities.Helper
             WriteLog(
                 new LoggerDto
                 {
-                    LogLevel = LOG_LEVEL[LogLevelEnum.TRACE],
+                    LogLevel = GetLogLevelName(LogLevelEnum.TRACE),
                     Message = message,
                     ClassName = className,
                     MethodName = methodName
@@ -100,7 +88,7 @@ namespace Utilities.Helper
 
         public void LogDebug(string message)
         {
-            WriteLog(new LoggerDto { LogLevel = LOG_LEVEL[LogLevelEnum.DEBUG], Message = message });
+            WriteLog(new LoggerDto { LogLevel = GetLogLevelName(LogLevelEnum.DEBUG), Message = message });
         }
 
         public void LogDebug(string message, string className = "", string methodName = "")
@@ -108,7 +96,7 @@ namespace Utilities.Helper
             WriteLog(
                 new LoggerDto
                 {
-                    LogLevel = LOG_LEVEL[LogLevelEnum.DEBUG],
+                    LogLevel = GetLogLevelName(LogLevelEnum.DEBUG),
                     Message = message,
                     ClassName = className,
                     MethodName = methodName
@@ -118,7 +106,7 @@ namespace Utilities.Helper
 
         public void LogInfo(string message)
         {
-            WriteLog(new LoggerDto { LogLevel = LOG_LEVEL[LogLevelEnum.INFO], Message = message });
+            WriteLog(new LoggerDto { LogLevel = GetLogLevelName(LogLevelEnum.INFO), Message = message });
         }
 
         public void LogInfo(string message, string className = "", string methodName = "")
@@ -126,7 +114,7 @@ namespace Utilities.Helper
             WriteLog(
                 new LoggerDto
                 {
-                    LogLevel = LOG_LEVEL[LogLevelEnum.INFO],
+                    LogLevel = GetLogLevelName(LogLevelEnum.INFO),
                     Message = message,
                     ClassName = className,
                     MethodName = methodName
@@ -136,7 +124,7 @@ namespace Utilities.Helper
 
         public void LogWarning(string message)
         {
-            WriteLog(new LoggerDto { LogLevel = LOG_LEVEL[LogLevelEnum.WARN], Message = message });
+            WriteLog(new LoggerDto { LogLevel = GetLogLevelName(LogLevelEnum.WARN), Message = message });
         }
 
         public void LogWarning(string message, string className = "", string methodName = "")
@@ -144,7 +132,7 @@ namespace Utilities.Helper
             WriteLog(
                 new LoggerDto
                 {
-                    LogLevel = LOG_LEVEL[LogLevelEnum.WARN],
+                    LogLevel = GetLogLevelName(LogLevelEnum.WARN),
                     Message = message,
                     ClassName = className,
                     MethodName = methodName
@@ -154,7 +142,7 @@ namespace Utilities.Helper
 
         public void LogError(string message)
         {
-            WriteLog(new LoggerDto { LogLevel = LOG_LEVEL[LogLevelEnum.ERROR], Message = message });
+            WriteLog(new LoggerDto { LogLevel = GetLogLevelName(LogLevelEnum.ERROR), Message = message });
         }
 
         public void LogError(string message, Exception ex, string className = "", string methodName = "")
@@ -162,7 +150,7 @@ namespace Utilities.Helper
             WriteLog(
                 new LoggerDto
                 {
-                    LogLevel = LOG_LEVEL[LogLevelEnum.ERROR],
+                    LogLevel = GetLogLevelName(LogLevelEnum.ERROR),
                     Message = message,
                     ClassName = className,
                     MethodName = methodName
@@ -172,7 +160,7 @@ namespace Utilities.Helper
 
         public void LogFatal(string message)
         {
-            WriteLog(new LoggerDto { LogLevel = LOG_LEVEL[LogLevelEnum.FATAL], Message = message });
+            WriteLog(new LoggerDto { LogLevel = GetLogLevelName(LogLevelEnum.FATAL), Message = message });
         }
 
         public void LogFatal(string message, string className = "", string methodName = "")
@@ -180,7 +168,7 @@ namespace Utilities.Helper
             WriteLog(
                 new LoggerDto
                 {
-                    LogLevel = LOG_LEVEL[LogLevelEnum.FATAL],
+                    LogLevel = GetLogLevelName(LogLevelEnum.FATAL),
                     Message = message,
                     ClassName = className,
                     MethodName = methodName
@@ -190,7 +178,7 @@ namespace Utilities.Helper
 
         public void LogOff(string message)
         {
-            WriteLog(new LoggerDto { LogLevel = LOG_LEVEL[LogLevelEnum.OFF], Message = message });
+            WriteLog(new LoggerDto { LogLevel = GetLogLevelName(LogLevelEnum.OFF), Message = message });
         }
 
         public void LogOff(string message, string className = "", string methodName = "")
@@ -198,7 +186,7 @@ namespace Utilities.Helper
             WriteLog(
                 new LoggerDto
                 {
-                    LogLevel = LOG_LEVEL[LogLevelEnum.OFF],
+                    LogLevel = GetLogLevelName(LogLevelEnum.OFF),
                     Message = message,
                     ClassName = className,
                     MethodName = methodName
@@ -236,6 +224,8 @@ namespace Utilities.Helper
             }
             return filePath;
         }
+
+        private readonly Func<LogLevelEnum, string> GetLogLevelName = (logLevelEnum) => Enum.GetName(typeof(LogLevelEnum), logLevelEnum) ?? throw new Exception("Unknown logLevel.");
 
         private void WriteLog(LoggerDto loggerDto)
         {
