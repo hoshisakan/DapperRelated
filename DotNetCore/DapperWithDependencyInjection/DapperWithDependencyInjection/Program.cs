@@ -1,5 +1,6 @@
 ﻿using DapperWithDependencyInjection.Extensions;
 using DapperWithDependencyInjection.Test.ITest;
+using DataAccess.Data.IData;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Utilities.Helper;
@@ -49,8 +50,9 @@ namespace DapperWithDependencyInjection
 
             try
             {
-                //Stopwatch sw = new Stopwatch();
                 _stopwatchHelper.Timer(_dapperTest.TestByPersonWithUnitWork, _jsonConfigurationHelper.GetAppSettingInt("Iterations", 1000));
+                IDapperConnectionProvider _dapperConnectionProvider = service.GetRequiredService<IDapperConnectionProvider>();
+                _dapperConnectionProvider.Dispose();
             }
             catch (Exception ex)
             {

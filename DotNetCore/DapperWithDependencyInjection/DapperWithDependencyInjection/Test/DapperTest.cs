@@ -134,14 +134,26 @@ namespace DapperWithDependencyInjection.Test
         {
             int objNumber = 1;
             int stopNumber = (int)Math.Pow(10, 4);
+            int dataCount = 0;
 
             List<Person> persons = new List<Person>();
 
             Console.WriteLine($"Test by {nameof(UnitWork)} with {nameof(TestCardRepository)}");
+            _loggerHelper.LogDebug($"Test by {nameof(UnitWork)} with {nameof(TestCardRepository)}", className, nameof(TestByPersonWithUnitWork));
 
             Console.WriteLine("----------------------------------------");
+            _loggerHelper.LogDebug("----------------------------------------", className, nameof(TestByPersonWithUnitWork));
+
+            dataCount = _unitWork.PersonRepository.GetCount();
+
+            Console.WriteLine($"Data count: {dataCount}");
+            _loggerHelper.LogDebug($"Data count: {dataCount}", className, nameof(TestByPersonWithUnitWork));
+
+            Console.WriteLine("----------------------------------------");
+            _loggerHelper.LogDebug("----------------------------------------", className, nameof(TestByPersonWithUnitWork));
 
             Console.WriteLine("Start testing single add query");
+            _loggerHelper.LogDebug("Start testing single add query", className, nameof(TestByPersonWithUnitWork));
 
             /// Add
             Person person = new Person()
@@ -156,9 +168,13 @@ namespace DapperWithDependencyInjection.Test
 
             Console.WriteLine("End testing single add query");
 
+            _loggerHelper.LogDebug("End testing single add query", className, nameof(TestByPersonWithUnitWork));
+
             Console.WriteLine("----------------------------------------");
 
-            Console.WriteLine("Start testing single update query");
+            _loggerHelper.LogDebug("----------------------------------------", className, nameof(TestByPersonWithUnitWork));
+
+            //Console.WriteLine("Start testing single update query");
 
             ///// Update
             ///// 
@@ -201,11 +217,27 @@ namespace DapperWithDependencyInjection.Test
 
             Console.WriteLine("Start testing multiple add query");
 
+            _loggerHelper.LogDebug("Start testing multiple add query", className, nameof(TestByPersonWithUnitWork));
+
             _unitWork.PersonRepository.AddRange(persons);
 
             Console.WriteLine("End testing multiple add query");
 
+            _loggerHelper.LogDebug("End testing multiple add query", className, nameof(TestByPersonWithUnitWork));
+
             Console.WriteLine("----------------------------------------");
+
+            _loggerHelper.LogDebug("----------------------------------------", className, nameof(TestByPersonWithUnitWork));
+
+            dataCount = _unitWork.PersonRepository.GetCount();
+
+            Console.WriteLine($"Data count: {dataCount}");
+
+            _loggerHelper.LogDebug($"Data count: {dataCount}", className, nameof(TestByPersonWithUnitWork));
+
+            Console.WriteLine("----------------------------------------");
+
+            _loggerHelper.LogDebug("----------------------------------------", className, nameof(TestByPersonWithUnitWork));
 
             //Console.WriteLine("Start testing multiple select query");
 

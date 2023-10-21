@@ -21,12 +21,6 @@ namespace DataAccess.Repositories
             PersonRepository = new PersonRepository(_dapperProvider, _loggerHelper);
         }
 
-        //~UnitWork()
-        //{
-        //    _loggerHelper.LogDebug("UnitWork is disposed.", nameof(UnitWork), "~UnitWork");
-        //    _dapperProvider.Dispose(true);
-        //}
-
         public void Save()
         {
             throw new NotImplementedException();

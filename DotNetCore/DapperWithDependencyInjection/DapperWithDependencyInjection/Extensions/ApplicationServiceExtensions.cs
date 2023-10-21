@@ -29,8 +29,6 @@ namespace DapperWithDependencyInjection.Extensions
 
             services.AddSingleton<ISystemHelper, SystemHelper>();
 
-            //services.AddSingleton<IStopwatchHelper, StopwatchHelper>();
-
             services.AddSingleton<IDateTimeHelper, DateTimeHelper>();
 
             services.AddSingleton<ILoggerHelper, LoggerHelper>();

@@ -1,5 +1,6 @@
 ﻿using DapperTraditionalTest.Extensions;
 using DapperTraditionalTest.Test.ITest;
+using DataAccess.Data.IData;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Utilities.Helper;
@@ -53,6 +54,8 @@ namespace DataAccess
                 //_queryTest.TestFileTable();
                 //_queryTest.TestAPLog_Parameter();
                 _stopwatchHelper.Timer(() => _queryTest.IsTableExists(), 1);
+                IDapperConnectionProvider _dapperConnectionProvider = service.GetRequiredService<IDapperConnectionProvider>();
+                _dapperConnectionProvider.Dispose();
             }
             catch (Exception ex)
             {
