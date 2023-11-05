@@ -5,6 +5,7 @@ namespace DataAccess.Repositories.IRepository
 {
     public interface IRepository<T> where T : class
     {
+        public bool IsTableEmpty();
         public abstract List<T> GetAll();
         public abstract T? GetFirstOrDefault(Expression<Func<T, bool>> predicate);
         public abstract T GetFirst();

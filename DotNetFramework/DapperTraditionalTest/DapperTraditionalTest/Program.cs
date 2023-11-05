@@ -53,13 +53,15 @@ namespace DataAccess
                 //_queryTest.TestKiosk_Parameter();
                 //_queryTest.TestFileTable();
                 //_queryTest.TestAPLog_Parameter();
-                _stopwatchHelper.Timer(() => _queryTest.IsTableExists(), 1);
+                _stopwatchHelper.Timer(() => _queryTest.TestIsTableEmpty(), 1);
+                //_stopwatchHelper.Timer(() => _queryTest.TestIsTableExists(), 1);
                 IDapperConnectionProvider _dapperConnectionProvider = service.GetRequiredService<IDapperConnectionProvider>();
                 _dapperConnectionProvider.Dispose();
             }
             catch (Exception ex)
             {
-                _loggerHelper.LogError(ex.Message, ex);
+                _loggerHelper.LogError(ex.ToString(), ex);
+                Console.WriteLine(ex.ToString());
             }
             finally
             {

@@ -50,7 +50,9 @@ namespace DapperWithDependencyInjection
 
             try
             {
-                _stopwatchHelper.Timer(_dapperTest.TestByPersonWithUnitWork, _jsonConfigurationHelper.GetAppSettingInt("Iterations", 1000));
+                _stopwatchHelper.Timer(_dapperTest.TestIsTableEmpty, _jsonConfigurationHelper.GetAppSettingInt("Iterations", 1000));
+                _stopwatchHelper.Timer(_dapperTest.TestIsTableExists, _jsonConfigurationHelper.GetAppSettingInt("Iterations", 1000));
+                //_stopwatchHelper.Timer(_dapperTest.TestByPersonWithUnitWork, _jsonConfigurationHelper.GetAppSettingInt("Iterations", 1000));
                 IDapperConnectionProvider _dapperConnectionProvider = service.GetRequiredService<IDapperConnectionProvider>();
                 _dapperConnectionProvider.Dispose();
             }

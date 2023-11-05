@@ -1,7 +1,7 @@
 ﻿using DapperTraditionalTest.Test.ITest;
 using DataAccess.Repositories.IRepositories;
-using Models.Entity.NEC.Test;
 using Models.DataModel.NECRelated.APLog;
+using Models.Entity.NEC.Test;
 using Utilities.Helper.IHelper;
 
 namespace DapperTraditionalTest.Test
@@ -11,15 +11,24 @@ namespace DapperTraditionalTest.Test
         private readonly IUnitWork _unitWork;
         private readonly IJsonHelper _jsonHelper;
         private readonly ILoggerHelper _loggerHelper;
+        //private readonly IJsonConfigurationHelper _jsonConfigurationHelper;
 
-        public QueryTest(IUnitWork unitWork, IJsonHelper jsonHelper, ILoggerHelper loggerHelper)
+
+        public QueryTest(IUnitWork unitWork, IJsonHelper jsonHelper,
+            ILoggerHelper loggerHelper)
         {
             _unitWork = unitWork;
             _jsonHelper = jsonHelper;
             _loggerHelper = loggerHelper;
+            //_jsonConfigurationHelper = jsonConfigurationHelper;
         }
 
-        public void IsTableExists()
+        public void TestIsTableEmpty()
+        {
+            Console.WriteLine($"Test: {this._unitWork.FileTable_Repository.IsTableEmpty()}");
+        }
+
+        public void TestIsTableExists()
         {
             Dictionary<string, bool> tempAllTableCheckResult = new Dictionary<string, bool>()
             {
@@ -27,7 +36,7 @@ namespace DapperTraditionalTest.Test
                 {"APLog",_unitWork.APLog_Repository.IsTableExists()},
                 {"Kiosk_tblMember",  _unitWork.Kiosk_TblMember_Repository.IsTableExists()},
             };
-            _loggerHelper.LogDebug(_jsonHelper.Serialize(tempAllTableCheckResult), nameof(QueryTest), nameof(IsTableExists));
+            _loggerHelper.LogDebug(_jsonHelper.Serialize(tempAllTableCheckResult), nameof(QueryTest), nameof(TestIsTableExists));
             Console.WriteLine(_jsonHelper.Serialize(tempAllTableCheckResult));
         }
 

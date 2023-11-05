@@ -95,6 +95,12 @@ namespace DapperWithDependencyInjection.Test
             _loggerHelper.LogDebug(_jsonHelper.Serialize(isPersonTableExist), className, methodName);
         }
 
+        public void TestIsTableEmpty()
+        {
+            Console.WriteLine($"TestCardRepository Table Is Empty? {this._unitWork.TestCardRepository.IsTableEmpty()}");
+            Console.WriteLine($"PersonRepository Table Is Empty? {this._unitWork.PersonRepository.IsTableEmpty()}");
+        }
+
         public void TestByCard()
         {
 

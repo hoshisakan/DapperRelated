@@ -489,7 +489,6 @@ namespace DataAccess.Repositories
             else
             {
                 PropertyInfo[]? entityProperties = entities.FirstOrDefault()?.GetType().GetProperties();
-
                 string primaryKey = GetPrimaryKeyName();
 
                 int take = 1000;
@@ -537,6 +536,12 @@ namespace DataAccess.Repositories
         public bool IsTableExists()
         {
             int result = _dapperProvider.Connect().QueryFirst<int>($"SELECT CASE WHEN OBJECT_ID('{typeof(T).Name}', 'U') IS NOT NULL THEN 1 ELSE 0 END");
+            return result > 0;
+        }
+
+        public bool IsTableEmpty()
+        {
+            int result = _dapperProvider.Connect().QueryFirst<int>($"SELECT CASE WHEN EXISTS (SELECT TOP 1 * FROM {typeof(T).Name}) THEN 0 ELSE 1 END");
             return result > 0;
         }
     }

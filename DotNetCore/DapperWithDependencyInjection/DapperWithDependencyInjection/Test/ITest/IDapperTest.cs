@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DapperWithDependencyInjection.Test.ITest
+﻿namespace DapperWithDependencyInjection.Test.ITest
 {
     public interface IDapperTest
     {
@@ -12,6 +6,7 @@ namespace DapperWithDependencyInjection.Test.ITest
         void TestTakeRelatedMethods();
         void TestSkipRelatedMethods();
         void TestTakeAndSkipRelatedMethods();
+        void TestIsTableEmpty();
         void TestIsTableExists();
         void TestByCard();
         void TestByPerson();
